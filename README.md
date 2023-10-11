@@ -1,6 +1,6 @@
-# 2023-celegans-sandbox
+# EmbryoStage
 
-Label-free analysis and prediciton of developmental outcomes of C. elgans embryos
+Label-free analysis and prediciton of developmental stages of embryos
 ----------------------------------
 
 ## Installation
