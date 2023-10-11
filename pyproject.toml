@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embryostage"
+description = "Classification of embryonic stages from label-free movies"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Shalin Mehta", email = "shalin.mehta@gmail.com" }, 
+{ name = "Dave Matus", email = "dave.matus@arcadiascience.com"}]
+dependencies = [
+    "iohub==0.1.0.dev4",
+    "nd2",
+    "torch>=2.0.0",
+    "tensorboard>=2.13.0",
+    "lightning>=2.0.1",
+    "numpy",
+    "qtpy",
+    "pandas",
+    "natsort",
+    "napari[all]",
+    "napari-ome-zarr",
+    "scikit-image",
+    "scikit-learn",
+    "torchvision", 
+    "torchmetrics",
+    "monai",
+    "tensorboard",
+    "tqdm",
+    ]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+metrics = [
+    "torchmetrics[detection]>=1.0.0",
+]
+dev = ["pytest", "pytest-cov", "hypothesis", "profilehooks", "onnxruntime"]
+
+[project.scripts]
+embryostage = "embryostage.cli.cli:main"
+
+[tool.setuptools_scm]
+write_to = "src/embryostage/_version.py"
+
+[tool.black]
+src = ["embryostage"]
+line-length = 80
+
