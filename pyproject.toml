@@ -8,8 +8,10 @@ description = "Classification of embryonic stages from label-free movies"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Shalin Mehta", email = "shalin.mehta@gmail.com" }, 
-{ name = "Dave Matus", email = "dave.matus@arcadiascience.com"}]
+authors = [
+    { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" }, 
+    { name = "Dave Matus", email = "dave.matus@arcadiascience.com"},
+]
 dependencies = [
     "iohub==0.1.0.dev4",
     "nd2",
@@ -36,7 +38,19 @@ dynamic = ["version"]
 metrics = [
     "torchmetrics[detection]>=1.0.0",
 ]
-dev = ["pytest", "pytest-cov", "hypothesis", "profilehooks", "onnxruntime"]
+dev = [
+    "black~=22.3",
+    "flake8~=5.0",
+    "isort~=5.10",
+    "pre-commit~=2.19",
+    "pylint~=2.14",
+    "pytest~=7.1",
+    # TODO: remove these if unused after writing tests
+    "pytest-cov",
+    "hypothesis",
+    "profilehooks",
+    "onnxruntime",
+]
 
 [project.scripts]
 embryostage = "embryostage.cli.cli:main"
@@ -47,4 +61,31 @@ write_to = "src/embryostage/_version.py"
 [tool.black]
 src = ["embryostage"]
 line-length = 80
+target-version = ['py310']
+include = '\.pyi?$'
+skip-string-normalization = true
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | build
+    | dist
+    | notebooks
+    | ignore
+  )
+)
+'''
 
+[tool.isort]
+profile = "black"
+line_length = 80
+lines_between_types = 1
+default_section = "THIRDPARTY"
+no_lines_before = ["STDLIB", "THIRDPARTY"]
+ensure_newline_before_comments = true
