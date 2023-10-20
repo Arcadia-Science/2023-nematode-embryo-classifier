@@ -5,12 +5,10 @@ import numpy as np
 import zarr
 
 from iohub.ngff import open_ome_zarr
-from skimage.feature import canny
-from skimage.filters import gaussian, threshold_otsu, threshold_sauvola
+from skimage.filters import gaussian, threshold_otsu
 from skimage.measure import label, regionprops
 from skimage.morphology import binary_dilation, binary_erosion, disk
 from skimage.segmentation import clear_border
-from skimage.transform import hough_ellipse
 
 
 class EmbryoFinder:
@@ -50,7 +48,8 @@ class EmbryoFinder:
     -------
     find_embryos()
         Find and crop C. elegans embryos in the time series.
-        Results are stored in <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
+        Results are stored in
+        <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
         The embryoN.zarr stores can be dragged into napari.
         Multiple FOVs can be visualized using the view_embryos CLI.
 
@@ -189,7 +188,7 @@ class EmbryoFinder:
                 channel_names="BF20x",
             ) as input_store:
                 time_series = np.asarray(input_store[self.pyramid_level])
-                t_points = time_series.shape[0]
+                _ = time_series.shape[0]
                 time_series_std = np.std(time_series, axis=0).squeeze()
 
                 # Smoothing avoids detection of very small objects and

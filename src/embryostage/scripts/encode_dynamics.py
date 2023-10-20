@@ -1,7 +1,5 @@
 # %% Import packages
-from itertools import chain
 from pathlib import Path
-import napari
 import zarr
 
 from tqdm import tqdm

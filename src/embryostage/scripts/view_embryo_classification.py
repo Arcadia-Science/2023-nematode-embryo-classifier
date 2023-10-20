@@ -1,14 +1,18 @@
 from pathlib import Path
 import napari
 import numpy as np
-import pytorch_lightning as pl
 import torch
 import zarr
 
 from embryostage.models.classification import SulstonNet
 
 # Load a trained model from a checkpoint
-checkpoint_path = "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/checkpoint-epoch=10-val_loss=0.10.ckpt"
+checkpoint_path = (
+    "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/"
+    "sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/"
+    "checkpoint-epoch=10-val_loss=0.10.ckpt"
+)
+
 channel_names = ["moving_mean", "moving_std"]
 index_to_label = {
     0: "proliferation",
@@ -36,7 +40,8 @@ trained_model.eval()
 
 # Prepare your data
 embryo_movie = Path(
-    r"~/data/predict_development/celegans_embryos_dataset/230817_N2_heatshock/230817_2/embryo0.zarr"
+    r"~/data/predict_development/celegans_embryos_dataset/230817_N2_heatshock/230817_2/"
+    "embryo0.zarr"
 )
 
 device = torch.device(DEVICE)
@@ -45,9 +50,10 @@ device = torch.device(DEVICE)
 
 for i, ch in enumerate(channel_names):
     channel_movie = zarr.open(Path(embryo_movie, ZARR_GROUP_NAME, ch), mode="r")
-    channel_movie = np.array(
-        channel_movie[2:-2, ...]
-    )  # First and last two frames are black. The array is in (T, C, H, W) shape. We will treat T as a batch dimension for the clasification model.
+
+    # First and last two frames are black. The array is in (T, C, H, W) shape.
+    # We will treat T as a batch dimension for the clasification model.
+    channel_movie = np.array(channel_movie[2:-2, ...])
     if i == 0:
         input_movie = channel_movie
     else:

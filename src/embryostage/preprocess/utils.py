@@ -2,8 +2,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from tqdm import tqdm
-
 
 def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=True):
     if features is None:
@@ -69,7 +67,8 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
         for c_idx, channel in enumerate(features):
             flattened_features = feature_imgs[t_range, c_idx].flatten()
             if channel == "optical_flow":
-                # Optical flow max is sensitive to other embryos moving into scene. We use the 99th percentile instead.
+                # Optical flow max is sensitive to other embryos moving into scene.
+                # We use the 99th percentile instead.
                 max_val = np.percentile(flattened_features, 99)
                 min_val = np.min(flattened_features.flatten())
             else:
@@ -102,8 +101,9 @@ def get_movie_paths(
         movie_paths_fov = list(all_fovs.glob(f"{date_stamp}_{fov}/embryo*"))
         if not movie_paths_fov:
             print(
-                f"No movie found at {database_path}/{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}.",
-                "Check the date stamp and FOV numbers.",
+                "No movie found at "
+                f"{database_path}/{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}."
+                "Check the date stamp and FOV numbers."
             )
         elif movie_paths:
             movie_paths = movie_paths + movie_paths_fov

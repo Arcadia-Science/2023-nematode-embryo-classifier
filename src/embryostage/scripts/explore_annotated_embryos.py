@@ -1,16 +1,13 @@
 # %% imports
-import threading  # threading is needed to run napari in nonblocking mode.
-
 from pathlib import Path
 import matplotlib.pyplot as plt
 import napari
 import numpy as np
-import pandas as pd
 
 from embryostage.models.data import EmbryoDataModule, EmbryoDataset
-from embryostage.preprocess.utils import compute_morphodynamics
 
 dataset_path = Path("~/docs/data/predict_development/celegans_embryos_dataset").expanduser()
+
 annotation_csv = Path(
     "~/docs/code/2023-celegans-sandbox/ground_truth/embryo_developmental_stage.csv"
 ).expanduser()
@@ -25,7 +22,8 @@ channel_names = ["moving_mean", "moving_std"]
 # %load_ext autoreload
 # %autoreload 2
 # # %% The script to explore all annotated embryos.
-# We first create an EmbryoDataset object, which reads all annotations and annotated frames into memory.
+# We first create an EmbryoDataset object,
+# which reads all annotations and annotated frames into memory.
 
 
 # %% Test the dataset.

@@ -33,7 +33,8 @@ class SulstonNet(pl.LightningModule):
         # Load pre-trained ResNet and adapt it.
         self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
 
-        # Update the model architecture to match the number of input channels and output classes.
+        # Update the model architecture to match
+        # the number of input channels and output classes.
         conv1_out_channels = (
             self.resnet.conv1.out_channels
         )  # output channels from the first conv layer

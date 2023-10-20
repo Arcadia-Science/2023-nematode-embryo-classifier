@@ -9,10 +9,9 @@ import torch
 import zarr
 
 from torch.utils.data import DataLoader, Dataset
-from torch.utils.data._utils.collate import (  # PyTorch's default collate function
-    default_collate,
-)
-from torchvision.transforms import AutoAugment, AutoAugmentPolicy
+
+# PyTorch's default collate function
+from torch.utils.data._utils.collate import default_collate
 from tqdm import tqdm
 
 
@@ -32,7 +31,8 @@ class EmbryoDataset(Dataset):
 
         self.dataset_path = dataset_path
         self.channel_names = channel_names
-        # The length fo this list indicates the number of channels from which stage is predicted.
+        # The length of this list indicates the number of channels
+        # from which stage is predicted.
         # The names of channels describe what they represent
         # (e.g., moving_mean, moving_std, fluorescent_reporter, raw, optical_flow)
 
@@ -179,7 +179,8 @@ class EmbryoDataModule(pl.LightningDataModule):
         # Create a weighted sampler to balance the classes
         # ------
         # Calculate the number of samples in each class.
-        # Don't read labels as test_dataset[1], because the __getitem__ method loads images too and is very slow when called for entire training dataset.
+        # Don't read labels as test_dataset[1], because the __getitem__ method loads images
+        # too and is very slow when called for entire training dataset.
 
         train_labels_df = self.dataset.labels_df.iloc[self.train_dataset.indices]
         class_sample_count = train_labels_df.groupby("stage").count()["frame"]

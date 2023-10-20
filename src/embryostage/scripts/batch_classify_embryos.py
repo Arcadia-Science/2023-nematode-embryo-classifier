@@ -2,7 +2,6 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import pytorch_lightning as pl
 import torch
 import zarr
 
@@ -12,7 +11,12 @@ from embryostage.models.classification import SulstonNet
 from embryostage.preprocess.utils import get_movie_paths
 
 # %%  Load a trained model from a checkpoint
-checkpoint_path = "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/checkpoint-epoch=10-val_loss=0.10.ckpt"
+checkpoint_path = (
+    "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/"
+    "sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/"
+    "checkpoint-epoch=10-val_loss=0.10.ckpt"
+)
+
 channel_names = ["moving_mean", "moving_std"]
 index_to_label = {
     0: "proliferation",
@@ -57,9 +61,10 @@ print("Classifying movies...")
 for idx_movie, movie_path in enumerate(tqdm(movie_paths)):
     for idx_ch, ch in enumerate(channel_names):
         channel_movie = zarr.open(Path(movie_path, ZARR_GROUP_NAME, ch), mode="r")
-        channel_movie = np.array(
-            channel_movie[2:-2, ...]
-        )  # First and last two frames are black. The array is in (T, C, H, W) shape. We will treat T as a batch dimension for the clasification model.
+
+        # First and last two frames are black. The array is in (T, C, H, W) shape.
+        # We will treat T as a batch dimension for the clasification model.
+        channel_movie = np.array(channel_movie[2:-2, ...])
         if not idx_ch:
             input_movie = channel_movie
         else:
@@ -74,7 +79,7 @@ for idx_movie, movie_path in enumerate(tqdm(movie_paths)):
         logits = trained_model(input_tensor)
         labels = torch.argmax(logits, axis=1)
         labels = labels.to("cpu").numpy()
-        labels = [index_to_label[l] for l in labels]
+        labels = [index_to_label[label] for label in labels]
 
     labels_series = pd.Series(labels, name=f"{movie_path.parent.name}_{movie_path.name}")
 

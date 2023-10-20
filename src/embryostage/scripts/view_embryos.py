@@ -1,5 +1,4 @@
 # %% Imports and parameters
-from pathlib import Path
 import napari
 import zarr
 

@@ -1,6 +1,5 @@
 # %% imports
 from pathlib import Path
-import click
 import nd2
 import numpy as np
 
