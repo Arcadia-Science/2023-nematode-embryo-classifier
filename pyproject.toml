@@ -9,7 +9,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" }, 
+    { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" },
     { name = "Dave Matus", email = "dave.matus@arcadiascience.com"},
 ]
 dependencies = [
@@ -26,7 +26,7 @@ dependencies = [
     "napari-ome-zarr",
     "scikit-image",
     "scikit-learn",
-    "torchvision", 
+    "torchvision",
     "torchmetrics",
     "monai",
     "tensorboard",

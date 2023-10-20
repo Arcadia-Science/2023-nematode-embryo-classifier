@@ -1,9 +1,9 @@
 # %% Imports and parameters
+from pathlib import Path
 import napari
 import zarr
-from pathlib import Path
+
 from embryostage.preprocess.utils import get_movie_paths
-import napari
 
 # import os
 
@@ -22,9 +22,7 @@ if __name__ == "__main__":
     date_stamp = "230719"
     FOVs = [4, 5, 25]
 
-    movie_paths = get_movie_paths(
-        database_path, strain, perturbation, date_stamp, FOVs
-    )
+    movie_paths = get_movie_paths(database_path, strain, perturbation, date_stamp, FOVs)
 
     viewer = napari.Viewer()
 

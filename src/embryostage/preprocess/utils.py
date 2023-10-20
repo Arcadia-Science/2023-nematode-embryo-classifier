@@ -1,12 +1,11 @@
+from pathlib import Path
 import cv2
 import numpy as np
+
 from tqdm import tqdm
-from pathlib import Path
 
 
-def compute_morphodynamics(
-    movie, features=None, t_window=5, normalize_features=True
-):
+def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=True):
     if features is None:
         features = [
             "moving_std",
@@ -21,17 +20,13 @@ def compute_morphodynamics(
     # Parameters for calculating optical flow.
     pyr_scale = 0.5
     pyr_levels = 1
-    win_size = (
-        Y // 10
-    )  # We want to measure large scale changes in the embryo shape.
+    win_size = Y // 10  # We want to measure large scale changes in the embryo shape.
     iterations = 5
     poly_n = 7
     poly_sigma = 1.5
     options = 0
 
-    feature_imgs = np.random.random((T, len(features), 1, Y, X)).astype(
-        np.float32
-    )
+    feature_imgs = np.random.random((T, len(features), 1, Y, X)).astype(np.float32)
     # Store data in the usual TCZYX format.
 
     for t_idx in range(edge_frames, T - edge_frames):
@@ -81,9 +76,9 @@ def compute_morphodynamics(
                 max_val = np.max(flattened_features)
                 min_val = np.min(flattened_features)
 
-            feature_imgs[t_range, c_idx, 0] = (
-                feature_imgs[t_range, c_idx, 0] - min_val
-            ) / (max_val - min_val)
+            feature_imgs[t_range, c_idx, 0] = (feature_imgs[t_range, c_idx, 0] - min_val) / (
+                max_val - min_val
+            )
 
     return feature_imgs, features
 

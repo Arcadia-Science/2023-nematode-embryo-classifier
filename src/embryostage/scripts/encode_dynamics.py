@@ -1,10 +1,12 @@
 # %% Import packages
+from itertools import chain
+from pathlib import Path
 import napari
 import zarr
-from pathlib import Path
-from itertools import chain
-from embryostage.preprocess.utils import compute_morphodynamics
+
 from tqdm import tqdm
+
+from embryostage.preprocess.utils import compute_morphodynamics
 
 # %%
 if __name__ == "__main__":
@@ -38,10 +40,7 @@ if __name__ == "__main__":
             # movie = open_ome_zarr(movie_path)[pyramid_level]
             movie = zarr.open(str(movie_path), mode="r")
             feature_imgs, features = compute_morphodynamics(movie)
-            feature_dict = {
-                features[n]: feature_imgs[:, n, ...]
-                for n in range(len(features))
-            }
+            feature_dict = {features[n]: feature_imgs[:, n, ...] for n in range(len(features))}
             zarr.save_group(
                 Path(movie_path, "dynamic_features"),
                 **feature_dict,

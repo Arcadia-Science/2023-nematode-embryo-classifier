@@ -1,15 +1,15 @@
 # %% imports
-import pytorch_lightning as pl
-from embryostage.models.classification import SulstonNet
-from embryostage.preprocess.utils import get_movie_paths
-import zarr
-import torch
-import numpy as np
 from pathlib import Path
-from embryostage.preprocess.utils import get_movie_paths
+import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
+import torch
+import zarr
+
 from tqdm import tqdm
 
+from embryostage.models.classification import SulstonNet
+from embryostage.preprocess.utils import get_movie_paths
 
 # %%  Load a trained model from a checkpoint
 checkpoint_path = "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/checkpoint-epoch=10-val_loss=0.10.ckpt"
@@ -47,9 +47,7 @@ strain = "N2"
 perturbation = "heatshock"
 date_stamp = "230817"
 FOVs = range(99)
-movie_paths = get_movie_paths(
-    database_path, strain, perturbation, date_stamp, FOVs
-)
+movie_paths = get_movie_paths(database_path, strain, perturbation, date_stamp, FOVs)
 
 
 # %% Add "raw" channel to the list of channels.
@@ -58,9 +56,7 @@ print("Classifying movies...")
 
 for idx_movie, movie_path in enumerate(tqdm(movie_paths)):
     for idx_ch, ch in enumerate(channel_names):
-        channel_movie = zarr.open(
-            Path(movie_path, ZARR_GROUP_NAME, ch), mode="r"
-        )
+        channel_movie = zarr.open(Path(movie_path, ZARR_GROUP_NAME, ch), mode="r")
         channel_movie = np.array(
             channel_movie[2:-2, ...]
         )  # First and last two frames are black. The array is in (T, C, H, W) shape. We will treat T as a batch dimension for the clasification model.
@@ -80,9 +76,7 @@ for idx_movie, movie_path in enumerate(tqdm(movie_paths)):
         labels = labels.to("cpu").numpy()
         labels = [index_to_label[l] for l in labels]
 
-    labels_series = pd.Series(
-        labels, name=f"{movie_path.parent.name}_{movie_path.name}"
-    )
+    labels_series = pd.Series(labels, name=f"{movie_path.parent.name}_{movie_path.name}")
 
     if not idx_movie:
         classifications_list = [labels_series]

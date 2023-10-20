@@ -1,24 +1,16 @@
 # %% Imports and classes.
-import numpy as np
-from iohub.ngff import open_ome_zarr
-import zarr
-
-from skimage.measure import label, regionprops
-from skimage.filters import threshold_otsu, gaussian, threshold_sauvola
-from skimage.feature import canny
-from skimage.transform import hough_ellipse
+from pathlib import Path
 import matplotlib.pyplot as plt
-
-from pathlib import Path
-
-
 import numpy as np
 import zarr
-from pathlib import Path
-from skimage.filters import gaussian
-from skimage.measure import regionprops
-from skimage.morphology import binary_erosion, binary_dilation, disk
+
+from iohub.ngff import open_ome_zarr
+from skimage.feature import canny
+from skimage.filters import gaussian, threshold_otsu, threshold_sauvola
+from skimage.measure import label, regionprops
+from skimage.morphology import binary_dilation, binary_erosion, disk
 from skimage.segmentation import clear_border
+from skimage.transform import hough_ellipse
 
 
 class EmbryoFinder:
@@ -211,9 +203,7 @@ class EmbryoFinder:
                     embryos_fov,
                     mask,
                     regions,
-                ) = self.segment_time_projection(
-                    smooth_projection, method="otsu"
-                )
+                ) = self.segment_time_projection(smooth_projection, method="otsu")
 
                 plot_results("otsu")
 
@@ -356,11 +346,7 @@ class EmbryoFinder:
 
         for n in range(len(regions)):
             looks_like_embryo = (
-                (
-                    0.5 * self.l_embryo_pix
-                    <= regions[n].major_axis_length
-                    <= self.l_embryo_pix
-                )
+                (0.5 * self.l_embryo_pix <= regions[n].major_axis_length <= self.l_embryo_pix)
                 and (
                     0.5 * self.l_embryo_pix * self.d_embryo_pix
                     <= regions[n].area
@@ -384,8 +370,6 @@ class EmbryoFinder:
             )
 
             if looks_like_embryo and embryo_within_image:
-                embryos.append(
-                    {"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax}
-                )
+                embryos.append({"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax})
 
         return (embryos, binary, regions)

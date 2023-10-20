@@ -1,19 +1,18 @@
-import torch
-import pytorch_lightning as pl
-from torch import nn
-from torchvision import models
-import torchmetrics
 import matplotlib.pyplot as plt
 import numpy as np
+import pytorch_lightning as pl
+import torch
+import torchmetrics
+
+from torch import nn
+from torchvision import models
 
 # Define DataModule
 
 
 # Load pre-trained ResNet
 class SulstonNet(pl.LightningModule):
-    def __init__(
-        self, in_channels=2, n_classes=5, index_to_label=None, xy_size=224
-    ):
+    def __init__(self, in_channels=2, n_classes=5, index_to_label=None, xy_size=224):
         # We will use "morphology" and "dynamics" channels as inputs.
         # Define a model.
         super(SulstonNet, self).__init__()
@@ -54,9 +53,7 @@ class SulstonNet(pl.LightningModule):
         )  # update the last layer to output n_classes
 
         # Example input array
-        self.example_input_array = torch.rand(
-            1, self.in_channels, self.xy_size, self.xy_size
-        )
+        self.example_input_array = torch.rand(1, self.in_channels, self.xy_size, self.xy_size)
 
         self.train_acc = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=self.n_classes
@@ -203,9 +200,7 @@ class SulstonNet(pl.LightningModule):
             axs[i].axis("off")
         plt.tight_layout()
 
-        self.logger.experiment.add_figure(
-            f"{stage}_samples", fig, self.global_step
-        )
+        self.logger.experiment.add_figure(f"{stage}_samples", fig, self.global_step)
 
         return fig
 

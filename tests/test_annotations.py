@@ -4,6 +4,7 @@
 # Spot-check the annotations.csv file written to each zarr store.
 
 from pathlib import Path
+
 from embryostage.models.data import link_annotations2zarrs
 
 
@@ -16,9 +17,7 @@ def test_annotations():
         "~/docs/data/predict_development/celegans_embryos_dataset"
     ).expanduser()
 
-    metadata_path = Path(
-        "../../../ground_truth/embryo_metadata.csv"
-    ).expanduser()
+    metadata_path = Path("../../../ground_truth/embryo_metadata.csv").expanduser()
 
     link_annotations2zarrs(
         annotations_path,

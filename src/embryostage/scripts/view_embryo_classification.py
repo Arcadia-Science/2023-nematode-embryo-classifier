@@ -1,10 +1,11 @@
-import pytorch_lightning as pl
-from embryostage.models.classification import SulstonNet
-import zarr
-import torch
-import numpy as np
 from pathlib import Path
 import napari
+import numpy as np
+import pytorch_lightning as pl
+import torch
+import zarr
+
+from embryostage.models.classification import SulstonNet
 
 # Load a trained model from a checkpoint
 checkpoint_path = "~/data/predict_development/celegans_embryos_dataset/models/lightning_logs/sulstonNet_heatshock_7classes_moving_mean_std/checkpoints/checkpoint-epoch=10-val_loss=0.10.ckpt"
@@ -52,9 +53,7 @@ for i, ch in enumerate(channel_names):
     else:
         input_movie = np.concatenate((input_movie, channel_movie), axis=1)
 
-input_tensor = torch.from_numpy(
-    input_movie
-)  # Ignore the first channel (raw) that we added.
+input_tensor = torch.from_numpy(input_movie)  # Ignore the first channel (raw) that we added.
 input_tensor = input_tensor.to(device)
 input_tensor = torch.nn.functional.interpolate(input_tensor, size=IMGXY)
 

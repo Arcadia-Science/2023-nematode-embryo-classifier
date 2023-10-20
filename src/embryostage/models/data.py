@@ -1,17 +1,18 @@
-import pandas as pd
-import numpy as np
-import zarr
-from pathlib import Path
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data._utils.collate import (
-    default_collate,
-)  # PyTorch's default collate function
-import torch
-
-import monai.transforms as transforms
-import pytorch_lightning as pl
-from torchvision.transforms import AutoAugment, AutoAugmentPolicy
 import os
+
+from pathlib import Path
+import monai.transforms as transforms
+import numpy as np
+import pandas as pd
+import pytorch_lightning as pl
+import torch
+import zarr
+
+from torch.utils.data import DataLoader, Dataset
+from torch.utils.data._utils.collate import (  # PyTorch's default collate function
+    default_collate,
+)
+from torchvision.transforms import AutoAugment, AutoAugmentPolicy
 from tqdm import tqdm
 
 
@@ -41,14 +42,11 @@ class EmbryoDataset(Dataset):
         human_annotations = pd.read_csv(annotations_csv)
         experiment_metadata = pd.read_csv(metadata_csv)
         # Number of classes.
-        self.labels_df = expand_annotations(
-            human_annotations, experiment_metadata
-        )
+        self.labels_df = expand_annotations(human_annotations, experiment_metadata)
         self.n_classes = len(self.labels_df["stage"].unique())
 
         self.label_to_index = {
-            label: index
-            for index, label in enumerate(self.labels_df["stage"].unique())
+            label: index for index, label in enumerate(self.labels_df["stage"].unique())
         }
         self.label_to_code = {
             label: torch.nn.functional.one_hot(
@@ -78,9 +76,7 @@ class EmbryoDataset(Dataset):
 
     def __getitem__(self, idx):
         # Find the requested channels at a given index in dataset.
-        zarr_path = Path(
-            self.dataset_path, self.labels_df.loc[idx]["zarr_path"]
-        )
+        zarr_path = Path(self.dataset_path, self.labels_df.loc[idx]["zarr_path"])
         frame = self.labels_df.loc[idx]["frame"]
 
         images = []
@@ -90,9 +86,7 @@ class EmbryoDataset(Dataset):
             if os.path.exists(channel_path):
                 images.append(zarr.open(channel_path, "r")[frame, :].squeeze())
             else:
-                raise FileNotFoundError(
-                    f"No such file or directory: '{channel_path}'"
-                )
+                raise FileNotFoundError(f"No such file or directory: '{channel_path}'")
         images = torch.tensor(np.stack(images, axis=0))
         images = self.resize_tensor(images, (self.XY_SIZE, self.XY_SIZE))
 
@@ -155,12 +149,8 @@ class EmbryoDataModule(pl.LightningDataModule):
         self.transform = transforms.Compose(
             [
                 transforms.RandFlip(prob=0.5, spatial_axis=(0, 1)),
-                transforms.RandRotate(
-                    range_x=0.5 * np.pi, prob=0.2, padding_mode="border"
-                ),
-                transforms.RandZoom(
-                    prob=0.2, min_zoom=0.8, max_zoom=1.2, padding_mode="edge"
-                ),
+                transforms.RandRotate(range_x=0.5 * np.pi, prob=0.2, padding_mode="border"),
+                transforms.RandZoom(prob=0.2, min_zoom=0.8, max_zoom=1.2, padding_mode="edge"),
             ]
         )
 
@@ -184,18 +174,14 @@ class EmbryoDataModule(pl.LightningDataModule):
             self.train_dataset,
             self.val_dataset,
             self.test_dataset,
-        ) = torch.utils.data.random_split(
-            self.dataset, [train_size, val_size, test_size]
-        )
+        ) = torch.utils.data.random_split(self.dataset, [train_size, val_size, test_size])
 
         # Create a weighted sampler to balance the classes
         # ------
         # Calculate the number of samples in each class.
         # Don't read labels as test_dataset[1], because the __getitem__ method loads images too and is very slow when called for entire training dataset.
 
-        train_labels_df = self.dataset.labels_df.iloc[
-            self.train_dataset.indices
-        ]
+        train_labels_df = self.dataset.labels_df.iloc[self.train_dataset.indices]
         class_sample_count = train_labels_df.groupby("stage").count()["frame"]
         # Above returns a dictionary with stages as keys and frame counts as values.
         # Weights per class, this is also a dictionary.
@@ -203,8 +189,7 @@ class EmbryoDataModule(pl.LightningDataModule):
 
         # Weights per sample.
         samples_weights = [
-            weights_class[train_labels_df.loc[i]["stage"]]
-            for i in self.train_dataset.indices
+            weights_class[train_labels_df.loc[i]["stage"]] for i in self.train_dataset.indices
         ]
 
         self.sampler = torch.utils.data.WeightedRandomSampler(
@@ -251,9 +236,7 @@ class EmbryoDataModule(pl.LightningDataModule):
 # TODO: Convert all these methods into a class.
 
 
-def get_embryo_path(
-    database_path: Path, row, strain, perturbation, date_stamp
-):
+def get_embryo_path(database_path: Path, row, strain, perturbation, date_stamp):
     fov = row["fov"]
     embryo = row["embryo_idx"]
     all_embryos = Path(
@@ -268,27 +251,19 @@ def get_embryo_path(
     ).expanduser()
 
 
-def expand_annotations_movie(
-    df_movie, row, dev_stage_cols, t_start_cols, t_end_cols
-):
+def expand_annotations_movie(df_movie, row, dev_stage_cols, t_start_cols, t_end_cols):
     for idx, col in enumerate(dev_stage_cols):
         t_start = row[t_start_cols[idx]]
         t_end = row[t_end_cols[idx]]
         current_stage = row[col]
-        if (
-            not pd.isna(t_start)
-            and not pd.isna(t_end)
-            and not pd.isna(current_stage)
-        ):
+        if not pd.isna(t_start) and not pd.isna(t_end) and not pd.isna(current_stage):
             t_start = int(t_start)
             t_end = int(t_end)
             for frame in range(t_start, t_end + 1):
                 df_movie = pd.concat(
                     [
                         df_movie,
-                        pd.DataFrame(
-                            [{"frame": frame, "stage": current_stage}]
-                        ),
+                        pd.DataFrame([{"frame": frame, "stage": current_stage}]),
                     ],
                     ignore_index=True,
                 )
@@ -303,9 +278,7 @@ def open_zarr_store(embryo_path):
         return zarr.open(str(embryo_path), mode="r")
 
 
-def link_annotations2zarrs(
-    annotations_path: Path, database_path: Path, metadata_path: Path
-):
+def link_annotations2zarrs(annotations_path: Path, database_path: Path, metadata_path: Path):
     """
     Links annotations of developmental stages to corresponding zarr stores for
     each embryo.
@@ -334,19 +307,13 @@ def link_annotations2zarrs(
     date2perturbation = dict(zip(metadata["date"], metadata["perturbation"]))
 
     # Find columns with annotations of developmental stages.
-    dev_stage_cols = [
-        col for col in annotations.columns if col.startswith("stage")
-    ]
+    dev_stage_cols = [col for col in annotations.columns if col.startswith("stage")]
 
     # Find columns with annotations of start times.
-    t_start_cols = [
-        col for col in annotations.columns if col.startswith("t_start")
-    ]
+    t_start_cols = [col for col in annotations.columns if col.startswith("t_start")]
 
     # Find columns with annotations of end times.
-    t_end_cols = [
-        col for col in annotations.columns if col.startswith("t_end")
-    ]
+    t_end_cols = [col for col in annotations.columns if col.startswith("t_end")]
 
     # Iterate over all embryos.
     pbar = tqdm(total=len(annotations))
@@ -355,18 +322,14 @@ def link_annotations2zarrs(
         date_stamp = row["date"]
         strain = date2strain[date_stamp]
         perturbation = date2perturbation[date_stamp]
-        embryo_path = get_embryo_path(
-            database_path, row, strain, perturbation, date_stamp
-        )
+        embryo_path = get_embryo_path(database_path, row, strain, perturbation, date_stamp)
         movie = open_zarr_store(embryo_path)
         if movie and movie.shape[0] > 1:
             df_movie = pd.DataFrame(columns=["frame", "stage"])
             df_movie = expand_annotations_movie(
                 df_movie, row, dev_stage_cols, t_start_cols, t_end_cols
             )
-            pbar.set_description(
-                f"writing to {embryo_path.parent.name}/{embryo_path.name}"
-            )
+            pbar.set_description(f"writing to {embryo_path.parent.name}/{embryo_path.name}")
             pbar.update()
             df_movie.to_csv(f"{embryo_path}/annotations.csv", index=False)
 
@@ -397,9 +360,7 @@ def expand_annotations(
     """
 
     # Create a dictionary of date -> strain.
-    date2strain = dict(
-        zip(experiment_metadata["date"], experiment_metadata["strain"])
-    )
+    date2strain = dict(zip(experiment_metadata["date"], experiment_metadata["strain"]))
 
     # Create a dictionary of date -> perturbation.
     date2perturbation = dict(
@@ -407,19 +368,13 @@ def expand_annotations(
     )
 
     # Find columns with annotations of developmental stages.
-    dev_stage_cols = [
-        col for col in annotations.columns if col.startswith("stage")
-    ]
+    dev_stage_cols = [col for col in annotations.columns if col.startswith("stage")]
 
     # Find columns with annotations of start times.
-    t_start_cols = [
-        col for col in annotations.columns if col.startswith("t_start")
-    ]
+    t_start_cols = [col for col in annotations.columns if col.startswith("t_start")]
 
     # Find columns with annotations of end times.
-    t_end_cols = [
-        col for col in annotations.columns if col.startswith("t_end")
-    ]
+    t_end_cols = [col for col in annotations.columns if col.startswith("t_end")]
 
     expanded_annotations = pd.DataFrame(
         columns=[
@@ -442,7 +397,9 @@ def expand_annotations(
         strain = date2strain[date_stamp]
         perturbation = date2perturbation[date_stamp]
 
-        zarr_path = f"{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}/embryo{embryo}.zarr"
+        zarr_path = (
+            f"{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}/embryo{embryo}.zarr"
+        )
         # Iterate over all annotations of developmental stages.
         pbar.set_description(f"collecting annotations of {zarr_path}")
         pbar.update()
@@ -452,11 +409,7 @@ def expand_annotations(
             current_stage = row[col]
             # Iterate over all time points at a given developmental
             # stage and expand the annotations.
-            if (
-                not pd.isna(t_start)
-                and not pd.isna(t_end)
-                and not pd.isna(current_stage)
-            ):
+            if not pd.isna(t_start) and not pd.isna(t_end) and not pd.isna(current_stage):
                 t_start = int(t_start)
                 t_end = int(t_end)
                 # Write a row for each annotated frame of the movie.
