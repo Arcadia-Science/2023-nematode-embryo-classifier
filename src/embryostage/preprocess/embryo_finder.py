@@ -21,7 +21,7 @@ class EmbryoFinder:
         Path to the input zarr store.
     date_stamp : str
         Date stamp for the experiment.
-    FOVs : list of str
+    fov_ids : list of str
         List of field of view (FOV) IDs.
     pyramid_level : str
         Level of the image pyramid to use for analysis.
@@ -35,14 +35,10 @@ class EmbryoFinder:
         Sampling rate in the x and y dimensions.
     t_sampling : int
         Sampling rate in the time dimension.
-    l_embryo_um : int
+    embryo_length_um : int
         Length of the embryo in microns.
-    d_embryo_um : int
+    embryo_diameter_um : int
         Diameter of the embryo in microns.
-    l_embryo_pix : int
-        Length of the embryo in pixels.
-    d_embryo_pix : int
-        Diameter of the embryo in pixels.
 
     Methods
     -------
@@ -61,11 +57,11 @@ class EmbryoFinder:
         self,
         input_path,
         date_stamp,
-        FOVs,
+        fov_ids,
         xy_sampling,
         t_sampling,
-        l_embryo,
-        d_embryo,
+        embryo_length_um,
+        embryo_diameter_um,
         output_path,
         strain,
         perturbation,
@@ -80,15 +76,15 @@ class EmbryoFinder:
             Path to the input zarr store.
         date_stamp : str
             Date stamp for the experiment.
-        FOVs : list of str
+        fov_ids : list of str
             List of field of view (FOV) IDs (typically numbers).
         xy_sampling : int
-            Pixel size in the x and y dimensions.
+            Pixel size in the x and y dimensions in microns/pixel.
         t_sampling : int
-            Sampling interval in the time dimension.
-        l_embryo : int
+            Sampling interval in the time dimension in seconds/frame.
+        embryo_length_um : int
             Length of the embryo in microns.
-        d_embryo : int
+        embryo_diameter_um : int
             Diameter of the embryo in microns.
         output_path : str
             Path to the output zarr store.
@@ -100,7 +96,7 @@ class EmbryoFinder:
         """
         self.input_path = input_path
         self.date_stamp = date_stamp
-        self.FOVs = FOVs
+        self.fov_ids = fov_ids
         # bioformats2raw outputs data at multiple resolutions.
         # We use the highest resolution for analysis.
         # TODO (KC): bioformats2raw is no longer used to convert nd2 to zarr,
@@ -111,10 +107,16 @@ class EmbryoFinder:
         self.perturbation = perturbation
         self.xy_sampling = xy_sampling
         self.t_sampling = t_sampling
-        self.l_embryo_um = l_embryo
-        self.d_embryo_um = d_embryo
-        self.l_embryo_pix = l_embryo // xy_sampling
-        self.d_embryo_pix = d_embryo // xy_sampling
+        self.embryo_length_um = embryo_length_um
+        self.embryo_diameter_um = embryo_diameter_um
+
+    @property
+    def embryo_length_pix(self):
+        return self._embryo_length_um // self.xy_sampling
+
+    @property
+    def embryo_diameter_pix(self):
+        return self._embryo_diameter_um // self.xy_sampling
 
     def find_embryos(self):
         """
@@ -122,16 +124,19 @@ class EmbryoFinder:
         """
 
         # Load the time series data and compute the time projection.
-        for i, fov in enumerate(self.FOVs):
-            zarr_path = Path(self.input_path, f"{fov}")
+        for fov_id in self.fov_ids:
+            zarr_path = Path(self.input_path, f"{fov_id}")
             if not zarr_path.exists():
-                print(f"Path {zarr_path} does not exist. Skipping FOV {fov}.")
+                print(f"Path {zarr_path} does not exist. Skipping FOV {fov_id}.")
                 continue
 
             # Load the time series data and compute the time projection.
-            print(f"Processing FOV {fov}.")
+            print(f"Processing FOV {fov_id}.")
             with open_ome_zarr(
-                Path(self.input_path, f"{fov}"), layout="fov", mode="r", channel_names="BF20x"
+                Path(self.input_path, f"{fov_id}"),
+                layout="fov",
+                mode="r",
+                channel_names="BF20x",
             ) as input_store:
                 time_series = np.asarray(input_store[self.pyramid_level])
                 time_series_std = np.std(time_series, axis=0).squeeze()
@@ -139,38 +144,37 @@ class EmbryoFinder:
                 # Smoothing avoids detection of very small objects and
                 # increases the size of the bouding box.
                 smooth_projection = gaussian(
-                    time_series_std,
-                    sigma=self.d_embryo_pix // 10,
+                    time_series_std, sigma=self.embryo_diameter_pix // 10
                 )
 
-                (embryos_fov, mask, regions) = self.segment_time_projection(
+                (embryo_bounding_boxes, mask, regions) = self.segment_time_projection(
                     smooth_projection, method="otsu"
                 )
 
                 self._plot_results(
                     method="otsu",
-                    fov=fov,
-                    embryos_fov=embryos_fov,
+                    fov_id=fov_id,
+                    embryo_bounding_boxes=embryo_bounding_boxes,
                     time_series_std=time_series_std,
                     smooth_projection=smooth_projection,
                     mask=mask,
                 )
 
             # Save the cropped embryos to the output zarr store
-            # organized by strain, perturbation, fov, and embryo index.
-            for i, embryo in enumerate(embryos_fov):
+            # organized by strain, perturbation, fov_id, and embryo index.
+            for ind, embryo_bounding_box in enumerate(embryo_bounding_boxes):
                 embryo_path = Path(
                     self.output_path,
                     f"{self.date_stamp}_{self.strain}_{self.perturbation}",
-                    f"{self.date_stamp}_{fov}/embryo{i}.zarr",
+                    f"{self.date_stamp}_{fov_id}/embryo{ind}.zarr",
                 )
 
                 output_shape = (
                     time_series.shape[0],
                     time_series.shape[1],
                     time_series.shape[2],
-                    int(self.l_embryo_pix - 1),
-                    int(self.l_embryo_pix - 1),
+                    int(self.embryo_length_pix - 1),
+                    int(self.embryo_length_pix - 1),
                 )
 
                 output_store = zarr.creation.open_array(
@@ -185,14 +189,14 @@ class EmbryoFinder:
                     :,
                     :,
                     :,
-                    embryo["ymin"] : embryo["ymax"],
-                    embryo["xmin"] : embryo["xmax"],
+                    embryo_bounding_box["ymin"] : embryo_bounding_box["ymax"],
+                    embryo_bounding_box["xmin"] : embryo_bounding_box["xmax"],
                 ]
 
                 output_store[:] = cropped_series
 
     def _plot_results(
-        self, method, fov, embryos_fov, time_series_std, smooth_projection, mask
+        self, method, fov_id, embryo_bounding_boxes, time_series_std, smooth_projection, mask
     ):
         """visualize the analysis results generated in find_embryos"""
         # TODO: turn this into a napari layer or widget.
@@ -218,30 +222,30 @@ class EmbryoFinder:
 
             plt.axis("off")
 
-            for n in range(len(embryos_fov)):
+            for ind in range(len(embryo_bounding_boxes)):
                 plt.text(
-                    embryos_fov[n]["xmin"],
-                    embryos_fov[n]["ymin"],
-                    str(n),
+                    embryo_bounding_boxes[ind]["xmin"],
+                    embryo_bounding_boxes[ind]["ymin"],
+                    str(ind),
                     color="green",
                     fontsize=12,
                 )
 
-            plt.title(f"{len(embryos_fov)} embryos detected")
+            plt.title(f"{len(embryo_bounding_boxes)} embryos detected")
             plt.draw()
             plt.pause(0.001)
 
             # Make a folder if it doesn't exist and save the plot.
-            fovPath = Path(
+            fov_path = Path(
                 self.output_path,
                 self.strain,
                 self.perturbation,
-                f"{self.date_stamp}_{fov}",
+                f"{self.date_stamp}_{fov_id}",
             )
-            fovPath.mkdir(parents=True, exist_ok=True)
-            plt.savefig(Path(fovPath, "detected_embryos.png"))
+            fov_path.mkdir(parents=True, exist_ok=True)
+            plt.savefig(Path(fov_path, "detected_embryos.png"))
 
-        elif method == "hough":
+        else:
             raise NotImplementedError
 
     def segment_time_projection(self, time_projection, method="otsu"):
@@ -258,7 +262,7 @@ class EmbryoFinder:
         Returns
         -------
         embryos_fov : list of dict
-            List of dictionaries containing information about the detected embryos.
+            List of bounding boxes for the detected embryos.
         mask : numpy.ndarray
             Binary mask of the segmented embryos.
         regions : list of skimage.measure._regionprops._RegionProperties
@@ -274,20 +278,23 @@ class EmbryoFinder:
         binary = binary_erosion(binary, disk(5))
         binary = binary_dilation(binary, disk(5))
 
-        # Compute the bounding box around each object, and return a list of
-        # dictionary of bounding box coordinates and cropped image.
+        # Compute the bounding box around each embryo
         labeled = label(binary)
         regions = regionprops(labeled)
 
-        embryos = []
+        embryo_bounding_boxes = []
         for n in range(len(regions)):
             # TODO (KC): document the origin of these magic numbers
             looks_like_embryo = (
-                (0.5 * self.l_embryo_pix <= regions[n].major_axis_length <= self.l_embryo_pix)
+                (
+                    0.5 * self.embryo_length_pix
+                    <= regions[n].major_axis_length
+                    <= self.embryo_length_pix
+                )
                 and (
-                    0.5 * self.l_embryo_pix * self.d_embryo_pix
+                    0.5 * self.embryo_length_pix * self.embryo_diameter_pix
                     <= regions[n].area
-                    <= 0.8 * self.l_embryo_pix * self.d_embryo_pix
+                    <= 0.8 * self.embryo_length_pix * self.embryo_diameter_pix
                 )
                 and (0.5 <= regions[n].eccentricity <= 0.95)
             )
@@ -296,10 +303,10 @@ class EmbryoFinder:
             center_y = (regions[n].bbox[0] + regions[n].bbox[2]) // 2
             center_x = (regions[n].bbox[1] + regions[n].bbox[3]) // 2
 
-            xmin = int(center_x - self.l_embryo_pix // 2)
-            xmax = int(center_x + self.l_embryo_pix // 2)
-            ymin = int(center_y - self.l_embryo_pix // 2)
-            ymax = int(center_y + self.l_embryo_pix // 2)
+            xmin = int(center_x - self.embryo_length_pix // 2)
+            xmax = int(center_x + self.embryo_length_pix // 2)
+            ymin = int(center_y - self.embryo_length_pix // 2)
+            ymax = int(center_y + self.embryo_length_pix // 2)
 
             embryo_within_image = (
                 xmin >= 0
@@ -309,6 +316,8 @@ class EmbryoFinder:
             )
 
             if looks_like_embryo and embryo_within_image:
-                embryos.append({"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax})
+                embryo_bounding_boxes.append(
+                    {"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax}
+                )
 
-        return (embryos, binary, regions)
+        return (embryo_bounding_boxes, binary, regions)

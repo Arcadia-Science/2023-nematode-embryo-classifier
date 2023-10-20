@@ -1,49 +1,46 @@
-# %% imports
 from pathlib import Path
 
-from embryostage.preprocess.EmbryoFinder import EmbryoFinder
+from embryostage.preprocess.embryo_finder import EmbryoFinder
 
 
-# %% Set all parameters here.
+if __name__ == "__main__":
+    topdir = "/mnt/embryostage-local/celegans_embryos_dataset"
+    input_path = Path(topdir, "230817_N2_heatshock_raw.zarr").expanduser()
+    output_path = Path(topdir, "230817_N2_heatshock_test").expanduser()
 
-# Paths to the input and output folders.
-topdir = "/mnt/embryostage-local/celegans_embryos_dataset"
-input_path = Path(topdir, "230817_N2_heatshock_raw.zarr").expanduser()
-output_path = Path(topdir, "230817_N2_heatshock_test").expanduser()
+    # Biological parameters.
+    date_stamp = "230817"
+    strain = "N2"
+    perturbation = "heatshock"
 
+    # Date stamp and FOVs to process.
+    # Check the annotations for each FOV, if it is reanalyzed.
+    fov_ids = [str(ind) for ind in range(99)]
 
-# FOVs to process.
-# Check the annotations for each FOV, if it is reanalyzed.
-FOVs = [f"fov{i}" for i in range(10)]
+    # Parameters of the imaging experiment.
+    # Sampling in um/pixel in the sample plane
+    xy_sampling = 0.43
 
-# Parameters of the imaging experiment.
-xy_sampling = 0.22  # Sampling in um/pixel in the sample plane.
-t_sampling = 300  # Sampling in seconds/frame.
-l_embryo = 65  # Length of the embryo in um.
-d_embryo = 32.5  # Diameter of the embryo in um.
+    # Sampling in seconds/frame
+    t_sampling = 300
 
-# Biological parameters.
-date_stamp = "230817"
-strain = "N2"
-perturbation = "heatshock"
+    # Length and diameter of the embryo in microns
+    embryo_length_um = 65
+    embryo_diameter_um = 32.5
 
-# viewer = napari.Viewer()
-# napari.run()
+    # Results are stored in
+    # <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
+    embryo_finder = EmbryoFinder(
+        input_path=input_path,
+        date_stamp=date_stamp,
+        fov_ids=fov_ids,
+        xy_sampling=xy_sampling,
+        t_sampling=t_sampling,
+        embryo_length_um=embryo_length_um,
+        embryo_diamenter_um=embryo_diameter_um,
+        output_path=output_path,
+        strain=strain,
+        perturbation=perturbation,
+    )
 
-# %% Run the EmbryoFinder.
-embryo_finder = EmbryoFinder(
-    input_path,
-    date_stamp,
-    FOVs,
-    xy_sampling,
-    t_sampling,
-    l_embryo,
-    d_embryo,
-    output_path,
-    strain,
-    perturbation,
-)
-
-embryo_finder.find_embryos()
-
-# %%
+    embryo_finder.find_embryos()
