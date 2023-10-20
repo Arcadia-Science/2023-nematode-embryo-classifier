@@ -7,7 +7,7 @@ setup-develop:
 .PHONY: lint
 lint:
 	flake8 . --count --statistics --exit-zero
-	black --check .
+	black --check src
 
 .PHONY: pre-commit
 pre-commit:
