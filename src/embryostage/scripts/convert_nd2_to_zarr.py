@@ -22,20 +22,22 @@ def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
     Returns:
         None
     """
+
+    # TODO (KC): document where this channel name comes from
     channel_names = ["DIC40x"]
 
     # Read the nd2 file as a dask array
-    nd2dask = nd2.imread(nd2_path, dask=True)
+    nd2_dask = nd2.imread(nd2_path, dask=True)
 
     # Get the dimensions of the nd2 file
-    T, P, Y, X = nd2dask.shape
+    num_timepoints, num_positions, size_y, size_x = nd2_dask.shape
 
     # Loop through each position in the nd2 file
     print(f"converting {nd2_path} to {ome_zarr_path}")
 
-    for pos in tqdm(range(P)):
+    for pos in tqdm(range(3)):
         # Get the dask array for the current position
-        pos_dask = nd2dask[:, pos, :, :].rechunk(chunks=(T, Y, X))
+        pos_dask = nd2_dask[:, pos, :, :].rechunk(chunks=(num_timepoints, size_y, size_x))
 
         # Create a directory for the current position in the ome-zarr file
         pos_zarr_path = Path(ome_zarr_path, f"fov{pos}")
@@ -47,10 +49,12 @@ def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
         )
 
         # Convert the dask array to a numpy array and reshape it
-        pos_array = np.asarray(pos_dask).reshape(T, 1, 1, Y, X)
+        pos_array = np.asarray(pos_dask).reshape(num_timepoints, 1, 1, size_y, size_x)
 
         # Create an image in the ome-zarr file for the current position
-        pos_zarr.create_image(data=pos_array, name="raw", chunks=(T, 1, 1, Y, X))
+        pos_zarr.create_image(
+            data=pos_array, name="raw", chunks=(num_positions, 1, 1, size_y, size_x)
+        )
 
         # Close the ome-zarr file for the current position
         pos_zarr.close()
