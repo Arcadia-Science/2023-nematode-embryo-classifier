@@ -2,7 +2,6 @@ from pathlib import Path
 
 from embryostage.preprocess.embryo_finder import EmbryoFinder
 
-
 if __name__ == "__main__":
     topdir = "/mnt/embryostage-local/celegans_embryos_dataset"
     input_path = Path(topdir, "230817_N2_heatshock_raw.zarr").expanduser()

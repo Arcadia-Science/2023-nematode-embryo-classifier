@@ -1,20 +1,20 @@
 # %% Imports and parameters
+import os
 import napari
 import zarr
 
 from embryostage.preprocess.utils import get_movie_paths
 
-import os
-
-
-# FIXME: althought napari can be launched from the terminal, 
+# FIXME: althought napari can be launched from the terminal,
 # it does not work from this script.
-# The environment is setup correctly, but it looks like that the thread created by napari doesn't inherit the environment variables.
+# The environment is setup correctly, but it looks like that the thread created by napari
+# doesn't inherit the environment variables.
 
-print(f'CONDA_PREFIX:{os.environ["CONDA_PREFIX"]}\n' 
-      f'QT_PLUGIN_PATH:{os.environ["QT_PLUGIN_PATH"]}\n'
-      f'QT_QPA_PLATFORM:{os.environ["QT_QPA_PLATFORM"]}\n'
-      )
+print(
+    f'CONDA_PREFIX:{os.environ["CONDA_PREFIX"]}\n'
+    f'QT_PLUGIN_PATH:{os.environ["QT_PLUGIN_PATH"]}\n'
+    f'QT_QPA_PLATFORM:{os.environ["QT_QPA_PLATFORM"]}\n'
+)
 
 
 # %% Make a list of all the movies.
