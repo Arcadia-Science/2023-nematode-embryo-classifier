@@ -8,15 +8,15 @@ from tqdm import tqdm
 
 nd2_path = (
     r"/mnt/embryostage-local/celegans_embryos_dataset/"
-    "raw_data/101123/ChannelBF_20x_Seq0012.nd2"
+    "raw_data/100423/ChannelDIC_40x_Seq0012.nd2"
 )
 # We use the strain_condition_date_raw.zarr naming convention
 ome_zarr_path = (
     r"/mnt/embryostage-local/celegans_embryos_dataset/"
-    "raw_data/101123_N2_HighSalt_raw.zarr"
+    "raw_data/231004_TBD_control_raw.zarr"
 )
 
-channel_names = ["BF20x"]
+channel_names = ["DIC40x"]
 
 
 # %%
