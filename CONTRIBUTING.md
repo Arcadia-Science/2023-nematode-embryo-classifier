@@ -22,7 +22,7 @@ You can install the dependencies needed for development using:
 
 ## Setting up remote development environment
 
-Our current remote development environment consists of vscode, vscode remote-ssh extension, vncserver on the remote node, and vnc client. We use napari as a N-dimensional viewer and tensorboard to view the logs of trained models. 
+Our current remote development environment consists of vscode, vscode remote-ssh extension for remote development, vscode jupyter extension to use the cell mode for interactive computing, vncserver on remote node for GUI, and vnc client. We use napari as a N-dimensional viewer and tensorboard to view the logs of trained models. 
 
 If you are working at Arcadia, see these [instructions](https://docs.google.com/document/d/1FNlo_8fPDrZWld80FSS6C0m-BI61hfqIqdt2aYh_AVY/edit#heading=h.gb4vfu1kxsm2) to use the AWS node dedicated to this project.
 
