@@ -39,23 +39,11 @@ We use zarr format to store the N-dimensional data and metadata. The data acquir
 
 We use [nd2] and [iohub] to convert the Nikon ND2 format to ome-zarr format.
 
-
 ___________________
 
 See the data and metadata organization [schema](docs/data_schema.md).
 
-### extract movies of embryos
-
-### annotate developmental events
-
-### compute features
-
-### train a classifier
-
-### evaluate a classifier
-
-###  use a classifier
-
+See the current documentation of the [pipeline](docs/pipeline.md) for a walkthrough of preprocessing, model training, model evaluation, and inference steps.
 ## Contributing
 
 
