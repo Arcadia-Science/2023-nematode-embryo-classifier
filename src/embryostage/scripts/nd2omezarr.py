@@ -3,17 +3,20 @@ from pathlib import Path
 import nd2
 import numpy as np
 from iohub import open_ome_zarr
+from tqdm import tqdm
 
 
 nd2_path = (
     r"/mnt/embryostage-local/celegans_embryos_dataset/"
-    "raw_data/230817/ChannelBF_20x_Seq0030.nd2"
+    "raw_data/101123/ChannelBF_20x_Seq0012.nd2"
 )
 # We use the strain_condition_date_raw.zarr naming convention
 ome_zarr_path = (
     r"/mnt/embryostage-local/celegans_embryos_dataset/"
-    "raw_data/230817_N2_heatshock_raw.zarr"
+    "raw_data/101123_N2_HighSalt_raw.zarr"
 )
+
+channel_names = ["BF20x"]
 
 
 # %%
@@ -22,7 +25,7 @@ ome_zarr_path = (
 # @click.option("--nd2path", type=Path, help="Path to nd2 file")
 # @click.option("--ome_zarr_path", type=Path, help="Path to output zarr")
 # @click.command()
-def nd2omezarr(nd2path: str, ome_zarr_path: str) -> None:
+def nd2omezarr(nd2_path: str, ome_zarr_path: str) -> None:
     """
     Converts a nd2 file to an ome-zarr file.
 
@@ -34,13 +37,15 @@ def nd2omezarr(nd2path: str, ome_zarr_path: str) -> None:
         None
     """
     # Read the nd2 file as a dask array
-    nd2dask = nd2.imread(nd2path, dask=True)
+    nd2dask = nd2.imread(nd2_path, dask=True)
 
     # Get the dimensions of the nd2 file
     T, P, Y, X = nd2dask.shape
     
     # Loop through each position in the nd2 file
-    for pos in range(P):
+    print(f"converting {nd2_path} to {ome_zarr_path}")
+    
+    for pos in tqdm(range(P)):
         # Get the dask array for the current position
         pos_dask = nd2dask[:, pos, :, :].rechunk(chunks=(T, Y, X))
 
@@ -49,7 +54,8 @@ def nd2omezarr(nd2path: str, ome_zarr_path: str) -> None:
         pos_zarr_path.mkdir(parents=True, exist_ok=True)
 
         # Open the ome-zarr file for the current position
-        pos_zarr = open_ome_zarr(pos_zarr_path, layout="fov", mode="w", channel_names=["BF"])
+        pos_zarr = open_ome_zarr(pos_zarr_path, layout="fov", mode="w",
+                                 channel_names=channel_names)
 
         # Convert the dask array to a numpy array and reshape it
         pos_array = np.asarray(pos_dask).reshape(T, 1, 1, Y, X)
@@ -60,9 +66,6 @@ def nd2omezarr(nd2path: str, ome_zarr_path: str) -> None:
         # Close the ome-zarr file for the current position
         pos_zarr.close()
 
-        # Print a message indicating that the current position has been processed
-        print(f"Finished position {pos}")
-
 
 if __name__ == "__main__":
-    nd2omezarr(nd2path, ome_zarr_path)
+    nd2omezarr(nd2_path, ome_zarr_path)
