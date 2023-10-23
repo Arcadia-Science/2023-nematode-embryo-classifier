@@ -23,31 +23,22 @@ To install current development version :
 ```
 
 
-
-## Usage
-
-Following are the steps in the analysis:
-
-### convert data to zarr
 Activate the conda environment
 ```sh
 conda activate embryostage
 ```
 
+## Usage
 
-We use zarr format to store the N-dimensional data and metadata. The data acquired from most microscopes can be converted to ome-zarr format using [bioformats2raw] converter.
-
-We use [nd2] and [iohub] to convert the Nikon ND2 format to ome-zarr format.
-
-___________________
 
 See the data and metadata organization [schema](docs/data_schema.md).
 
 See the current documentation of the [pipeline](docs/pipeline.md) for a walkthrough of preprocessing, model training, model evaluation, and inference steps.
+
 ## Contributing
 
 
-Contributions are very welcome.
+Contributions are very welcome. See this [guide](CONTRIBUTING.md)
 
 
 ## License
