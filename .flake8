@@ -1,0 +1,28 @@
+[flake8]
+max-line-length = 95
+
+# reference: https://lintlyci.github.io/Flake8Rules
+ignore =
+    # white before ':' (may conflict with black)
+    E203,
+    # line break before a binary operator
+    W503,
+    # continuation line under-indented for visual indent
+    # (forces indentation to opening parentheses if anything appears on the first line)
+    E128,
+
+per-file-ignores =
+    # allow star imports in `__init__.py`
+    */__init__.py: F401
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    docs,
+    notebooks,
+    ignore,
+    .venv,
+    .eggs,
+    .tox,

@@ -1,12 +1,9 @@
+from pathlib import Path
 import cv2
 import numpy as np
-from tqdm import tqdm
-from pathlib import Path
 
 
-def compute_morphodynamics(
-    movie, features=None, t_window=5, normalize_features=True
-):
+def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=True):
     if features is None:
         features = [
             "moving_std",
@@ -21,17 +18,13 @@ def compute_morphodynamics(
     # Parameters for calculating optical flow.
     pyr_scale = 0.5
     pyr_levels = 1
-    win_size = (
-        Y // 10
-    )  # We want to measure large scale changes in the embryo shape.
+    win_size = Y // 10  # We want to measure large scale changes in the embryo shape.
     iterations = 5
     poly_n = 7
     poly_sigma = 1.5
     options = 0
 
-    feature_imgs = np.random.random((T, len(features), 1, Y, X)).astype(
-        np.float32
-    )
+    feature_imgs = np.random.random((T, len(features), 1, Y, X)).astype(np.float32)
     # Store data in the usual TCZYX format.
 
     for t_idx in range(edge_frames, T - edge_frames):
@@ -74,16 +67,17 @@ def compute_morphodynamics(
         for c_idx, channel in enumerate(features):
             flattened_features = feature_imgs[t_range, c_idx].flatten()
             if channel == "optical_flow":
-                # Optical flow max is sensitive to other embryos moving into scene. We use the 99th percentile instead.
+                # Optical flow max is sensitive to other embryos moving into scene.
+                # We use the 99th percentile instead.
                 max_val = np.percentile(flattened_features, 99)
                 min_val = np.min(flattened_features.flatten())
             else:
                 max_val = np.max(flattened_features)
                 min_val = np.min(flattened_features)
 
-            feature_imgs[t_range, c_idx, 0] = (
-                feature_imgs[t_range, c_idx, 0] - min_val
-            ) / (max_val - min_val)
+            feature_imgs[t_range, c_idx, 0] = (feature_imgs[t_range, c_idx, 0] - min_val) / (
+                max_val - min_val
+            )
 
     return feature_imgs, features
 
@@ -107,8 +101,9 @@ def get_movie_paths(
         movie_paths_fov = list(all_fovs.glob(f"{date_stamp}_{fov}/embryo*"))
         if not movie_paths_fov:
             print(
-                f"No movie found at {database_path}/{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}.",
-                "Check the date stamp and FOV numbers.",
+                "No movie found at "
+                f"{database_path}/{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}."
+                "Check the date stamp and FOV numbers."
             )
         elif movie_paths:
             movie_paths = movie_paths + movie_paths_fov

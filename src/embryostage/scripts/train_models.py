@@ -1,10 +1,12 @@
 # %% imports
-from embryostage.models.classification import SulstonNet
-from embryostage.models.data import EmbryoDataModule
 from pathlib import Path
 import pytorch_lightning as pl
-from pytorch_model_summary import summary
+
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_model_summary import summary
+
+from embryostage.models.classification import SulstonNet
+from embryostage.models.data import EmbryoDataModule
 
 RANDOM_SEED = 2023
 pl.seed_everything(RANDOM_SEED)
@@ -14,9 +16,7 @@ pl.seed_everything(RANDOM_SEED)
 # %% Construct the data module
 
 
-dataset_path = Path(
-    "~/docs/data/predict_development/celegans_embryos_dataset"
-).expanduser()
+dataset_path = Path("~/docs/data/predict_development/celegans_embryos_dataset").expanduser()
 annotation_csv = Path(
     "~/docs/code/2023-celegans-sandbox/ground_truth/embryo_developmental_stage.csv"
 ).expanduser()

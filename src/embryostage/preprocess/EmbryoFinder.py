@@ -1,23 +1,13 @@
 # %% Imports and classes.
-import numpy as np
-from iohub.ngff import open_ome_zarr
-import zarr
-
-from skimage.measure import label, regionprops
-from skimage.filters import threshold_otsu, gaussian, threshold_sauvola
-from skimage.feature import canny
-from skimage.transform import hough_ellipse
+from pathlib import Path
 import matplotlib.pyplot as plt
-
-from pathlib import Path
-
-
 import numpy as np
 import zarr
-from pathlib import Path
-from skimage.filters import gaussian
-from skimage.measure import regionprops
-from skimage.morphology import binary_erosion, binary_dilation, disk
+
+from iohub.ngff import open_ome_zarr
+from skimage.filters import gaussian, threshold_otsu
+from skimage.measure import label, regionprops
+from skimage.morphology import binary_dilation, binary_erosion, disk
 from skimage.segmentation import clear_border
 
 
@@ -58,7 +48,8 @@ class EmbryoFinder:
     -------
     find_embryos()
         Find and crop C. elegans embryos in the time series.
-        Results are stored in <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
+        Results are stored in
+        <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
         The embryoN.zarr stores can be dragged into napari.
         Multiple FOVs can be visualized using the view_embryos CLI.
 
@@ -197,7 +188,7 @@ class EmbryoFinder:
                 channel_names="BF20x",
             ) as input_store:
                 time_series = np.asarray(input_store[self.pyramid_level])
-                t_points = time_series.shape[0]
+                _ = time_series.shape[0]
                 time_series_std = np.std(time_series, axis=0).squeeze()
 
                 # Smoothing avoids detection of very small objects and
@@ -211,9 +202,7 @@ class EmbryoFinder:
                     embryos_fov,
                     mask,
                     regions,
-                ) = self.segment_time_projection(
-                    smooth_projection, method="otsu"
-                )
+                ) = self.segment_time_projection(smooth_projection, method="otsu")
 
                 plot_results("otsu")
 
@@ -356,11 +345,7 @@ class EmbryoFinder:
 
         for n in range(len(regions)):
             looks_like_embryo = (
-                (
-                    0.5 * self.l_embryo_pix
-                    <= regions[n].major_axis_length
-                    <= self.l_embryo_pix
-                )
+                (0.5 * self.l_embryo_pix <= regions[n].major_axis_length <= self.l_embryo_pix)
                 and (
                     0.5 * self.l_embryo_pix * self.d_embryo_pix
                     <= regions[n].area
@@ -384,8 +369,6 @@ class EmbryoFinder:
             )
 
             if looks_like_embryo and embryo_within_image:
-                embryos.append(
-                    {"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax}
-                )
+                embryos.append({"ymin": ymin, "ymax": ymax, "xmin": xmin, "xmax": xmax})
 
         return (embryos, binary, regions)

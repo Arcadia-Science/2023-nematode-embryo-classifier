@@ -1,18 +1,13 @@
 # %% imports
-from embryostage.models.data import EmbryoDataset, EmbryoDataModule
 from pathlib import Path
+import matplotlib.pyplot as plt
 import napari
 import numpy as np
-import pandas as pd
 
-import matplotlib.pyplot as plt
-from embryostage.preprocess.utils import compute_morphodynamics
+from embryostage.models.data import EmbryoDataModule, EmbryoDataset
 
-import threading  # threading is needed to run napari in nonblocking mode.
+dataset_path = Path("~/docs/data/predict_development/celegans_embryos_dataset").expanduser()
 
-dataset_path = Path(
-    "~/docs/data/predict_development/celegans_embryos_dataset"
-).expanduser()
 annotation_csv = Path(
     "~/docs/code/2023-celegans-sandbox/ground_truth/embryo_developmental_stage.csv"
 ).expanduser()
@@ -27,14 +22,13 @@ channel_names = ["moving_mean", "moving_std"]
 # %load_ext autoreload
 # %autoreload 2
 # # %% The script to explore all annotated embryos.
-# We first create an EmbryoDataset object, which reads all annotations and annotated frames into memory.
+# We first create an EmbryoDataset object,
+# which reads all annotations and annotated frames into memory.
 
 
 # %% Test the dataset.
 
-celegans_dataset = EmbryoDataset(
-    dataset_path, channel_names, annotation_csv, metadata_csv
-)
+celegans_dataset = EmbryoDataset(dataset_path, channel_names, annotation_csv, metadata_csv)
 sample_image, sample_class = celegans_dataset[42]
 
 # Calculate number of embryos per stage
@@ -98,9 +92,7 @@ stages_unbalanced = [
     for idx in batch_labels_unbalanced.numpy().astype(int)
 ]
 
-stage_unbalanced_counts = {
-    s: stages_unbalanced.count(s) for s in set(stages_unbalanced)
-}
+stage_unbalanced_counts = {s: stages_unbalanced.count(s) for s in set(stages_unbalanced)}
 
 plt.figure("Unbalanced dataset")
 plt.bar(stage_unbalanced_counts.keys(), stage_unbalanced_counts.values())
@@ -129,9 +121,7 @@ stages_balanced = [
     embryo_data_module.dataset.index_to_label[idx]
     for idx in batch_labels_balanced.numpy().astype(int)
 ]
-stage_balanced_counts = {
-    s: stages_balanced.count(s) for s in set(stages_balanced)
-}
+stage_balanced_counts = {s: stages_balanced.count(s) for s in set(stages_balanced)}
 
 plt.figure("Balanced dataset")
 plt.bar(stage_balanced_counts.keys(), stage_balanced_counts.values())
@@ -142,14 +132,10 @@ plt.bar(stage_balanced_counts.keys(), stage_balanced_counts.values())
 viewer = napari.Viewer()
 
 # Add the batch images as an image layer
-layer1 = viewer.add_image(
-    batch_images_unbalanced.numpy(), name="batch_images_unbalanced"
-)
+layer1 = viewer.add_image(batch_images_unbalanced.numpy(), name="batch_images_unbalanced")
 
 # Add the batch images as an image layer
-layer2 = viewer.add_image(
-    batch_images_balanced.numpy(), name="batch_images_balanced"
-)
+layer2 = viewer.add_image(batch_images_balanced.numpy(), name="batch_images_balanced")
 
 
 # Function to update the text overlay

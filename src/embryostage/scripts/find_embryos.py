@@ -1,9 +1,11 @@
 # %% imports
 from pathlib import Path
+
 from embryostage.preprocess.EmbryoFinder import EmbryoFinder
 
 # %% Interactive execution.
 if __name__ == "__main__":
+
     # Set all parameters here.
     topdir = "D:\\Matus\\C_elegans\\predict_development\\"
     input_path = Path(topdir, "ChannelBF_20x_Seq0021.zarr").expanduser()

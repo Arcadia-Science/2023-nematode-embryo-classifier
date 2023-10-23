@@ -9,10 +9,10 @@ This repository uses conda to manage software environments and installations.
 You can find operating system-specific instructions for installing miniconda [here](https://docs.conda.io/en/latest/miniconda.html).
 After installing conda and [mamba](https://mamba.readthedocs.io/en/latest/), setup a new conda environment.
 
-### Setup `embryostage` environment 
+### Setup `embryostage` environment
 
-To setup the conda environment : 
-```sh   
+To setup the conda environment :
+```sh
     mamba create -n embryostage python=3.10
 ```
 
@@ -37,7 +37,7 @@ conda activate embryostage
 
 We use zarr format to store the N-dimensional data and metadata. The data acquired from most microscopes can be converted to ome-zarr format using [bioformats2raw] converter.
 
-We use [nd2] and [iohub] to convert the Nikon ND2 format to ome-zarr format.  
+We use [nd2] and [iohub] to convert the Nikon ND2 format to ome-zarr format.
 
 
 ___________________
@@ -59,7 +59,7 @@ See the data and metadata organization [schema](docs/data_schema.md).
 ## Contributing
 
 
-Contributions are very welcome. 
+Contributions are very welcome.
 
 
 ## License
