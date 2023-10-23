@@ -49,7 +49,7 @@ class EmbryoFinder:
     find_embryos()
         Find and crop C. elegans embryos in the time series.
         Results are stored in
-        <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
+        <output_path>/<strain>_<perturbation>_<date_stamp>/<date_stamp>_<fov>/<embryoN>.zarr.
         The embryoN.zarr stores can be dragged into napari.
         Multiple FOVs can be visualized using the view_embryos CLI.
 
