@@ -5,9 +5,15 @@ import numpy as np
 from iohub import open_ome_zarr
 
 
-nd2path = r"/mnt/embryostage-local/celegans_embryos_dataset/raw_data/230817/ChannelBF_20x_Seq0030.nd2"
+nd2_path = (
+    r"/mnt/embryostage-local/celegans_embryos_dataset/"
+    "raw_data/230817/ChannelBF_20x_Seq0030.nd2"
+)
 # We use the strain_condition_date_raw.zarr naming convention
-ome_zarr_path = r"/mnt/embryostage-local/celegans_embryos_dataset/raw_data/DQM327_heatshock_230817_raw.zarr"
+ome_zarr_path = (
+    r"/mnt/embryostage-local/celegans_embryos_dataset/"
+    "raw_data/230817_N2_heatshock_raw.zarr"
+)
 
 
 # %%
