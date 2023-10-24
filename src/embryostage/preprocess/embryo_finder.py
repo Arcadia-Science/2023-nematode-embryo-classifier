@@ -19,18 +19,10 @@ class EmbryoFinder:
     ----------
     input_path : str
         Path to the input zarr store.
-    date_stamp : str
-        Date stamp for the experiment.
     fov_ids : list of str
         List of field of view (FOV) IDs.
-    pyramid_level : str
-        Level of the image pyramid to use for analysis.
     output_path : str
         Path to the output zarr store.
-    strain : str
-        Strain name.
-    perturbation : str
-        Perturbation perturbation.
     xy_sampling_um : int
         Sampling rate in the x and y dimensions in microns
     t_sampling_sec : int
@@ -44,9 +36,9 @@ class EmbryoFinder:
     -------
     find_embryos()
         Find and crop C. elegans embryos in the time series.
-        Results are stored in
-        <output_path>/<strain>_<perturbation>_<date_stamp>/<date_stamp>_<fov>/<embryoN>.zarr.
-        The embryoN.zarr stores can be dragged into napari.
+        Results are stored in `{output_path}/fov{fov_id}/embryo-{embryo_id}.zarr`
+
+        The embryo*.zarr stores can be dragged into napari.
         Multiple FOVs can be visualized using the view_embryos CLI.
 
     segment_time_projection()
@@ -56,26 +48,20 @@ class EmbryoFinder:
     def __init__(
         self,
         input_path,
-        date_stamp,
         fov_ids,
         xy_sampling_um,
         t_sampling_sec,
         embryo_length_um,
         embryo_diameter_um,
         output_path,
-        strain,
-        perturbation,
     ):
         """
         Initialize EmbryoFinder object.
-
 
         Parameters
         ----------
         input_path : str (created with bioformats2raw).
             Path to the input zarr store.
-        date_stamp : str
-            Date stamp for the experiment.
         fov_ids : list of str
             List of field of view (FOV) IDs (typically numbers).
         xy_sampling_um : int
@@ -88,23 +74,11 @@ class EmbryoFinder:
             Diameter of the embryo in microns.
         output_path : str
             Path to the output zarr store.
-        strain : str
-            Strain name.
-        perturbation : str
-            Perturbation perturbation.
 
         """
         self.input_path = input_path
-        self.date_stamp = date_stamp
         self.fov_ids = fov_ids
-        # bioformats2raw outputs data at multiple resolutions.
-        # We use the highest resolution for analysis.
-        # TODO (KC): bioformats2raw is no longer used to convert nd2 to zarr,
-        # so this may not be necessary
-        self.pyramid_level = "0"
         self.output_path = output_path
-        self.strain = strain
-        self.perturbation = perturbation
         self.xy_sampling_um = xy_sampling_um
         self.t_sampling_sec = t_sampling_sec
         self._embryo_length_um = embryo_length_um
@@ -123,9 +97,9 @@ class EmbryoFinder:
         '''
         Crude way to generate an ID from bounding box coordinates that is unique within an FOV
         '''
-        return '-'.join(
-            ['%04d' % bounding_box[key] for key in ['xmin', 'ymin', 'xmax', 'ymax']]
-        )
+        x_center = (bounding_box['xmin'] + bounding_box['xmax']) // 2
+        y_center = (bounding_box['ymin'] + bounding_box['ymax']) // 2
+        return f'{x_center:04d}-{y_center:04d}'
 
     def find_embryos(self):
         """
