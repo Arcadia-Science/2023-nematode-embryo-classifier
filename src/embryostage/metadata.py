@@ -9,13 +9,12 @@ def load_dataset_metadata(dataset_id):
     Load the metadata for a given dataset as a pandas series
     '''
     dataset_metadata_filepath = REPO_ROOT / "ground_truth" / "embryo_metadata.csv"
+    if not dataset_metadata_filepath.exists():
+        raise FileNotFoundError(f"Metadata file not found at {dataset_metadata_filepath}")
+
     dataset_metadata = pd.read_csv(dataset_metadata_filepath)
-
-    # HACK: for now, we use the date as the dataset_id
-    dataset_metadata["dataset_id"] = dataset_metadata["date"].apply(str)
-
-    if dataset_id not in dataset_metadata.dataset_id.values:
+    dataset_metadata = dataset_metadata.loc[dataset_metadata.dataset_id == dataset_id]
+    if dataset_metadata.empty:
         raise ValueError(f"Dataset {dataset_id} not found in the metadata file.")
 
-    dataset_metadata = dataset_metadata.loc[dataset_metadata.dataset_id == dataset_id].iloc[0]
-    return dataset_metadata
+    return dataset_metadata.squeeze()
