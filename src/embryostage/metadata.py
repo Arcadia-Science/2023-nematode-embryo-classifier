@@ -13,6 +13,10 @@ def load_dataset_metadata(dataset_id):
         raise FileNotFoundError(f"Metadata file not found at {dataset_metadata_filepath}")
 
     dataset_metadata = pd.read_csv(dataset_metadata_filepath)
+
+    # the dataset_id is a date of the from `YYMMDD` which is read as an integer
+    dataset_metadata['dataset_id'] = dataset_metadata['dataset_id'].astype(str)
+
     dataset_metadata = dataset_metadata.loc[dataset_metadata.dataset_id == dataset_id]
     if dataset_metadata.empty:
         raise ValueError(f"Dataset {dataset_id} not found in the metadata file.")
