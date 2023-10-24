@@ -1,45 +1,46 @@
 from pathlib import Path
+import click
 
+from embryostage.metadata import load_dataset_metadata
 from embryostage.preprocess.embryo_finder import EmbryoFinder
 
-if __name__ == "__main__":
-    topdir = "/mnt/embryostage-local/celegans_embryos_dataset"
-    input_path = Path(topdir, "230817_N2_heatshock_raw.zarr").expanduser()
-    output_path = Path(topdir, "230817_N2_heatshock_test").expanduser()
 
-    # Biological parameters.
-    date_stamp = "230817"
-    strain = "N2"
-    perturbation = "heatshock"
+@click.option("--data-dirpath", type=Path, help="Path to the data directory")
+@click.option("--dataset-id", type=str, help="The ID of the dataset to process")
+@click.command()
+def find_embryos(data_dirpath, dataset_id):
+    '''
+    This is a wrapper for calling EmbryoFinder.find_embryos()
+    '''
 
-    # Date stamp and FOVs to process.
-    # Check the annotations for each FOV, if it is reanalyzed.
-    fov_ids = [str(ind) for ind in range(99)]
+    input_path = data_dirpath / dataset_id / 'raw_data'
+    output_path = data_dirpath / dataset_id / 'cropped_embryos'
 
-    # Parameters of the imaging experiment.
-    # Sampling in um/pixel in the sample plane
-    xy_sampling = 0.43
+    if not input_path.exists():
+        raise ValueError(f"No directory for dataset '{dataset_id}' found in {input_path}")
 
-    # Sampling in seconds/frame
-    t_sampling = 300
+    # Load the metadata for the dataset
+    dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)
 
-    # Length and diameter of the embryo in microns
-    embryo_length_um = 65
-    embryo_diameter_um = 32.5
+    # hard-coded list of FOV IDs (assumes there are at most 99 FOVs)
+    # TODO (KC): get the fov_ids from the metadata
+    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
 
-    # Results are stored in
-    # <output_path>/<strain>/<perturbation>/<date_stamp>_<fov>/<embryoN>.zarr.
     embryo_finder = EmbryoFinder(
         input_path=input_path,
-        date_stamp=date_stamp,
+        date_stamp=dataset_metadata.date,
         fov_ids=fov_ids,
-        xy_sampling=xy_sampling,
-        t_sampling=t_sampling,
-        embryo_length_um=embryo_length_um,
-        embryo_diamenter_um=embryo_diameter_um,
+        xy_sampling_um=float(dataset_metadata.xy_sampling_um),
+        t_sampling_sec=int(dataset_metadata.t_sampling_sec),
+        embryo_length_um=float(dataset_metadata.embryo_length_um),
+        embryo_diameter_um=float(dataset_metadata.embryo_diameter_um),
         output_path=output_path,
-        strain=strain,
-        perturbation=perturbation,
+        strain=dataset_metadata.strain,
+        perturbation=dataset_metadata.perturbation,
     )
 
     embryo_finder.find_embryos()
+
+
+if __name__ == '__main__':
+    find_embryos()

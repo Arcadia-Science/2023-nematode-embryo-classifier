@@ -31,10 +31,10 @@ class EmbryoFinder:
         Strain name.
     perturbation : str
         Perturbation perturbation.
-    xy_sampling : int
-        Sampling rate in the x and y dimensions.
-    t_sampling : int
-        Sampling rate in the time dimension.
+    xy_sampling_um : int
+        Sampling rate in the x and y dimensions in microns
+    t_sampling_sec : int
+        Sampling rate in the time dimension in seconds.
     embryo_length_um : int
         Length of the embryo in microns.
     embryo_diameter_um : int
@@ -58,8 +58,8 @@ class EmbryoFinder:
         input_path,
         date_stamp,
         fov_ids,
-        xy_sampling,
-        t_sampling,
+        xy_sampling_um,
+        t_sampling_sec,
         embryo_length_um,
         embryo_diameter_um,
         output_path,
@@ -78,9 +78,9 @@ class EmbryoFinder:
             Date stamp for the experiment.
         fov_ids : list of str
             List of field of view (FOV) IDs (typically numbers).
-        xy_sampling : int
+        xy_sampling_um : int
             Pixel size in the x and y dimensions in microns/pixel.
-        t_sampling : int
+        t_sampling_sec : int
             Sampling interval in the time dimension in seconds/frame.
         embryo_length_um : int
             Length of the embryo in microns.
@@ -105,18 +105,27 @@ class EmbryoFinder:
         self.output_path = output_path
         self.strain = strain
         self.perturbation = perturbation
-        self.xy_sampling = xy_sampling
-        self.t_sampling = t_sampling
-        self.embryo_length_um = embryo_length_um
-        self.embryo_diameter_um = embryo_diameter_um
+        self.xy_sampling_um = xy_sampling_um
+        self.t_sampling_sec = t_sampling_sec
+        self._embryo_length_um = embryo_length_um
+        self._embryo_diameter_um = embryo_diameter_um
 
     @property
     def embryo_length_pix(self):
-        return self._embryo_length_um // self.xy_sampling
+        return self._embryo_length_um // self.xy_sampling_um
 
     @property
     def embryo_diameter_pix(self):
-        return self._embryo_diameter_um // self.xy_sampling
+        return self._embryo_diameter_um // self.xy_sampling_um
+
+    @staticmethod
+    def bounding_box_to_id(bounding_box):
+        '''
+        Crude way to generate an ID from bounding box coordinates that is unique within an FOV
+        '''
+        return '-'.join(
+            ['%04d' % bounding_box[key] for key in ['xmin', 'ymin', 'xmax', 'ymax']]
+        )
 
     def find_embryos(self):
         """
@@ -125,7 +134,13 @@ class EmbryoFinder:
 
         # Load the time series data and compute the time projection.
         for fov_id in self.fov_ids:
-            zarr_path = Path(self.input_path, f"{fov_id}")
+            # the path to the raw zarr store for the current FOV
+            zarr_path = self.input_path / fov_id
+
+            # the path to the output directory for the current FOV
+            # (containing the cropped embryo zarrs and detected_embryos.png)
+            fov_output_path = self.output_path / fov_id
+
             if not zarr_path.exists():
                 print(f"Path {zarr_path} does not exist. Skipping FOV {fov_id}.")
                 continue
@@ -138,11 +153,11 @@ class EmbryoFinder:
                 mode="r",
                 channel_names="BF20x",
             ) as input_store:
-                time_series = np.asarray(input_store[self.pyramid_level])
+                time_series = np.asarray(input_store['raw'])
                 time_series_std = np.std(time_series, axis=0).squeeze()
 
                 # Smoothing avoids detection of very small objects and
-                # increases the size of the bouding box.
+                # increases the size of the bounding box.
                 smooth_projection = gaussian(
                     time_series_std, sigma=self.embryo_diameter_pix // 10
                 )
@@ -158,16 +173,14 @@ class EmbryoFinder:
                     time_series_std=time_series_std,
                     smooth_projection=smooth_projection,
                     mask=mask,
+                    export_path=fov_output_path,
                 )
 
             # Save the cropped embryos to the output zarr store
-            # organized by strain, perturbation, fov_id, and embryo index.
-            for ind, embryo_bounding_box in enumerate(embryo_bounding_boxes):
-                embryo_path = Path(
-                    self.output_path,
-                    f"{self.date_stamp}_{self.strain}_{self.perturbation}",
-                    f"{self.date_stamp}_{fov_id}/embryo{ind}.zarr",
-                )
+            for _, embryo_bounding_box in enumerate(embryo_bounding_boxes):
+                # generate an FOV-unique ID for the embryo
+                embryo_id = self.bounding_box_to_id(embryo_bounding_box)
+                embryo_path = fov_output_path / f'embryo-{embryo_id}.zarr'
 
                 output_shape = (
                     time_series.shape[0],
@@ -196,7 +209,14 @@ class EmbryoFinder:
                 output_store[:] = cropped_series
 
     def _plot_results(
-        self, method, fov_id, embryo_bounding_boxes, time_series_std, smooth_projection, mask
+        self,
+        method,
+        fov_id,
+        embryo_bounding_boxes,
+        time_series_std,
+        smooth_projection,
+        mask,
+        export_path,
     ):
         """visualize the analysis results generated in find_embryos"""
         # TODO: turn this into a napari layer or widget.
@@ -235,15 +255,8 @@ class EmbryoFinder:
             plt.draw()
             plt.pause(0.001)
 
-            # Make a folder if it doesn't exist and save the plot.
-            fov_path = Path(
-                self.output_path,
-                self.strain,
-                self.perturbation,
-                f"{self.date_stamp}_{fov_id}",
-            )
-            fov_path.mkdir(parents=True, exist_ok=True)
-            plt.savefig(Path(fov_path, "detected_embryos.png"))
+            export_path.mkdir(parents=True, exist_ok=True)
+            plt.savefig(export_path / "detected_embryos.png")
 
         else:
             raise NotImplementedError
