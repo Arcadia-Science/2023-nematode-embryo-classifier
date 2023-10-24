@@ -13,12 +13,12 @@ def find_embryos(data_dirpath, dataset_id):
     This is a wrapper for calling EmbryoFinder.find_embryos()
     '''
 
-    input_path = data_dirpath / dataset_id / 'raw_data'
-    output_path = data_dirpath / dataset_id / 'cropped_embryos'
+    input_path = data_dirpath / 'raw_data' / dataset_id
+    output_path = data_dirpath / 'cropped_embryos' / dataset_id
 
     if not input_path.exists():
         raise FileNotFoundError(
-            f"No directory for dataset '{dataset_id}' found in {input_path}"
+            f"No raw_data directory for dataset '{dataset_id}' found in {data_dirpath}"
         )
 
     # Load the metadata for the dataset

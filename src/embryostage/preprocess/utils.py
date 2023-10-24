@@ -94,7 +94,7 @@ def get_movie_paths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
     movie_paths = []
     for fov_id in fov_ids:
         embryo_zarr_paths = list(
-            (data_dirpath / dataset_id / 'cropped_embryos' / f'fov{fov_id}').glob(
+            (data_dirpath / 'cropped_embryos' / dataset_id / f'fov{fov_id}').glob(
                 'embryo*.zarr'
             )
         )
