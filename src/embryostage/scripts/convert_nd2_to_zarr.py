@@ -1,4 +1,3 @@
-# %% imports
 from pathlib import Path
 import click
 import nd2

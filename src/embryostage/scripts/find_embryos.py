@@ -17,7 +17,9 @@ def find_embryos(data_dirpath, dataset_id):
     output_path = data_dirpath / dataset_id / 'cropped_embryos'
 
     if not input_path.exists():
-        raise ValueError(f"No directory for dataset '{dataset_id}' found in {input_path}")
+        raise FileNotFoundError(
+            f"No directory for dataset '{dataset_id}' found in {input_path}"
+        )
 
     # Load the metadata for the dataset
     dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)

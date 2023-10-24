@@ -11,7 +11,8 @@ from embryostage.preprocess.utils import get_movie_paths
 @click.command()
 def view_embryos(data_dirpath, dataset_id):
     '''
-    This is a wrapper for calling EmbryoFinder.find_embryos()
+    Load the timelapses for all embryos from one or more FOVs from a given dataset
+    into napari for viewing and annotating the embryos.
     '''
 
     viewer = napari.Viewer()
