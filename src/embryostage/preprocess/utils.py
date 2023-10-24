@@ -1,5 +1,10 @@
 from pathlib import Path
-import cv2
+
+try:
+    import cv2
+except ModuleNotFoundError:
+    print("Warning: cv2 not found. Some features will not be available.")
+
 import numpy as np
 
 
@@ -82,32 +87,22 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
     return feature_imgs, features
 
 
-def get_movie_paths(
-    database_path: Path,
-    strain: str,
-    perturbation: str,
-    date_stamp: str,
-    FOVs: list[int] = [1],
-):
+def get_movie_paths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
+    '''
+    get the paths to all embryo timelapses/movies for a given dataset and set of FOVs
+    '''
     movie_paths = []
-    # List all FOVs.
-    all_fovs = Path(
-        database_path,
-        f"{date_stamp}_{strain}_{perturbation}",
-    ).expanduser()
-
-    # Concatenate paths to all embryos within each FOV.
-    for fov in FOVs:
-        movie_paths_fov = list(all_fovs.glob(f"{date_stamp}_{fov}/embryo*"))
-        if not movie_paths_fov:
-            print(
-                "No movie found at "
-                f"{database_path}/{date_stamp}_{strain}_{perturbation}/{date_stamp}_{fov}."
-                "Check the date stamp and FOV numbers."
+    for fov_id in fov_ids:
+        embryo_zarr_paths = list(
+            (data_dirpath / dataset_id / 'cropped_embryos' / f'fov{fov_id}').glob(
+                'embryo*.zarr'
             )
-        elif movie_paths:
-            movie_paths = movie_paths + movie_paths_fov
-        else:
-            movie_paths = movie_paths_fov
+        )
+
+        # embryo_zarr_paths will be an empty list if no directories match the glob pattern
+        if not embryo_zarr_paths:
+            print("Warning: no embryo movies found for {dataset_id} and FOV {fov_id}.")
+
+        movie_paths += embryo_zarr_paths
 
     return movie_paths
