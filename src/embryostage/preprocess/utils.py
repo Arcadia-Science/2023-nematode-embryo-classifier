@@ -101,7 +101,7 @@ def get_movie_paths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
 
         # embryo_zarr_paths will be an empty list if no directories match the glob pattern
         if not embryo_zarr_paths:
-            print("Warning: no embryo movies found for {dataset_id} and FOV {fov_id}.")
+            print(f"Warning: no embryo movies found for {dataset_id} and FOV {fov_id}.")
 
         movie_paths += embryo_zarr_paths
 
