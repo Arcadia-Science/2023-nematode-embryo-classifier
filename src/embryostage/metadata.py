@@ -1,14 +1,14 @@
-import pathlib
 import pandas as pd
 
-REPO_ROOT = pathlib.Path(__file__).parent.parent.parent
+from embryostage import file_utils
 
 
 def load_dataset_metadata(dataset_id):
     '''
     Load the metadata for a given dataset as a pandas series
     '''
-    dataset_metadata_filepath = REPO_ROOT / "ground_truth" / "embryo_metadata.csv"
+    repo_dirpath = file_utils.find_repo_root(__file__)
+    dataset_metadata_filepath = repo_dirpath / "ground_truth" / "embryo_metadata.csv"
     if not dataset_metadata_filepath.exists():
         raise FileNotFoundError(f"Metadata file not found at {dataset_metadata_filepath}")
 
