@@ -78,6 +78,7 @@ exclude = '''
     | dist
     | notebooks
     | ignore
+    | _version.py
   )
 )
 '''
