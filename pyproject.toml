@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
     { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" },
-    { name = "Dave Matus", email = "dave.matus@arcadiascience.com"},
+    { name = "Dave Matus", email = "dave.matus@arcadiascience.com" },
 ]
 dependencies = [
     "iohub==0.1.0.dev4",
@@ -32,13 +32,11 @@ dependencies = [
     "monai",
     "tensorboard",
     "tqdm",
-    ]
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-metrics = [
-    "torchmetrics[detection]>=1.0.0",
-]
+metrics = ["torchmetrics[detection]>=1.0.0"]
 dev = [
     "black~=22.3",
     "flake8~=5.0",
