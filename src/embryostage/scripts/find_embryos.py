@@ -32,7 +32,6 @@ def find_embryos(data_dirpath, dataset_id):
         output_path=output_path,
         fov_ids=fov_ids,
         xy_sampling_um=float(dataset_metadata.xy_sampling_um),
-        t_sampling_sec=int(dataset_metadata.t_sampling_sec),
         embryo_length_um=float(dataset_metadata.embryo_length_um),
         embryo_diameter_um=float(dataset_metadata.embryo_diameter_um),
     )
