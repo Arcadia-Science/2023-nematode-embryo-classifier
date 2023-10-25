@@ -1,6 +1,8 @@
 # %% Imports and classes.
+import multiprocessing
+
 from pathlib import Path
-import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import zarr
 
@@ -9,6 +11,12 @@ from skimage.filters import gaussian, threshold_otsu
 from skimage.measure import label, regionprops
 from skimage.morphology import binary_dilation, binary_erosion, disk
 from skimage.segmentation import clear_border
+
+# set the backend to Agg to avoid displaying the plots
+# (it seems this must be done before importing pyplot)
+matplotlib.use('Agg')
+
+import matplotlib.pyplot as plt  # noqa: E402
 
 
 class EmbryoFinder:
@@ -103,84 +111,86 @@ class EmbryoFinder:
 
     def find_embryos(self):
         """
-        Find and crop C. elegans embryos in the time series.
+        Find and crop C. elegans embryos in the time series in all FOVs in the dataset
         """
+        with multiprocessing.Pool() as pool:
+            pool.map(self._find_embryos_in_fov, self.fov_ids)
+
+    def _find_embryos_in_fov(self, fov_id):
+        '''
+        Find and crop embryos in a single FOV
+        '''
+        # the path to the raw zarr store for the current FOV
+        zarr_path = self.input_path / fov_id
+
+        # the path to the output directory for the current FOV
+        # (containing the cropped embryo zarrs and detected_embryos.png)
+        fov_output_path = self.output_path / fov_id
+
+        if not zarr_path.exists():
+            print(f"Path {zarr_path} does not exist. Skipping FOV {fov_id}.")
+            return
 
         # Load the time series data and compute the time projection.
-        for fov_id in self.fov_ids:
-            # the path to the raw zarr store for the current FOV
-            zarr_path = self.input_path / fov_id
+        print(f"Processing FOV {fov_id}.")
+        with open_ome_zarr(
+            Path(self.input_path, f"{fov_id}"),
+            layout="fov",
+            mode="r",
+            channel_names="BF20x",
+        ) as input_store:
+            time_series = np.asarray(input_store['raw'])
+            time_series_std = np.std(time_series, axis=0).squeeze()
 
-            # the path to the output directory for the current FOV
-            # (containing the cropped embryo zarrs and detected_embryos.png)
-            fov_output_path = self.output_path / fov_id
+            # Smoothing avoids detection of very small objects and
+            # increases the size of the bounding box.
+            smooth_projection = gaussian(time_series_std, sigma=self.embryo_diameter_pix // 10)
 
-            if not zarr_path.exists():
-                print(f"Path {zarr_path} does not exist. Skipping FOV {fov_id}.")
-                continue
+            (embryo_bounding_boxes, mask, regions) = self.segment_time_projection(
+                smooth_projection, method="otsu"
+            )
 
-            # Load the time series data and compute the time projection.
-            print(f"Processing FOV {fov_id}.")
-            with open_ome_zarr(
-                Path(self.input_path, f"{fov_id}"),
-                layout="fov",
-                mode="r",
-                channel_names="BF20x",
-            ) as input_store:
-                time_series = np.asarray(input_store['raw'])
-                time_series_std = np.std(time_series, axis=0).squeeze()
+            self._plot_results(
+                method="otsu",
+                fov_id=fov_id,
+                embryo_bounding_boxes=embryo_bounding_boxes,
+                time_series_std=time_series_std,
+                smooth_projection=smooth_projection,
+                mask=mask,
+                export_path=fov_output_path,
+            )
 
-                # Smoothing avoids detection of very small objects and
-                # increases the size of the bounding box.
-                smooth_projection = gaussian(
-                    time_series_std, sigma=self.embryo_diameter_pix // 10
-                )
+        # Save the cropped embryos to the output zarr store
+        for _, embryo_bounding_box in enumerate(embryo_bounding_boxes):
+            # generate an FOV-unique ID for the embryo
+            embryo_id = self.bounding_box_to_id(embryo_bounding_box)
+            embryo_path = fov_output_path / f'embryo-{embryo_id}.zarr'
 
-                (embryo_bounding_boxes, mask, regions) = self.segment_time_projection(
-                    smooth_projection, method="otsu"
-                )
+            output_shape = (
+                time_series.shape[0],
+                time_series.shape[1],
+                time_series.shape[2],
+                int(self.embryo_length_pix - 1),
+                int(self.embryo_length_pix - 1),
+            )
 
-                self._plot_results(
-                    method="otsu",
-                    fov_id=fov_id,
-                    embryo_bounding_boxes=embryo_bounding_boxes,
-                    time_series_std=time_series_std,
-                    smooth_projection=smooth_projection,
-                    mask=mask,
-                    export_path=fov_output_path,
-                )
+            output_store = zarr.creation.open_array(
+                embryo_path,
+                mode="w",
+                shape=output_shape,
+                chunks=output_shape,
+                dtype=time_series.dtype,
+            )
 
-            # Save the cropped embryos to the output zarr store
-            for _, embryo_bounding_box in enumerate(embryo_bounding_boxes):
-                # generate an FOV-unique ID for the embryo
-                embryo_id = self.bounding_box_to_id(embryo_bounding_box)
-                embryo_path = fov_output_path / f'embryo-{embryo_id}.zarr'
+            cropped_series = time_series[
+                :,
+                :,
+                :,
+                embryo_bounding_box["ymin"] : embryo_bounding_box["ymax"],
+                embryo_bounding_box["xmin"] : embryo_bounding_box["xmax"],
+            ]
 
-                output_shape = (
-                    time_series.shape[0],
-                    time_series.shape[1],
-                    time_series.shape[2],
-                    int(self.embryo_length_pix - 1),
-                    int(self.embryo_length_pix - 1),
-                )
-
-                output_store = zarr.creation.open_array(
-                    embryo_path,
-                    mode="w",
-                    shape=output_shape,
-                    chunks=output_shape,
-                    dtype=time_series.dtype,
-                )
-
-                cropped_series = time_series[
-                    :,
-                    :,
-                    :,
-                    embryo_bounding_box["ymin"] : embryo_bounding_box["ymax"],
-                    embryo_bounding_box["xmin"] : embryo_bounding_box["xmax"],
-                ]
-
-                output_store[:] = cropped_series
+            output_store[:] = cropped_series
 
     def _plot_results(
         self,
