@@ -1,49 +1,45 @@
-# %% imports
 from pathlib import Path
+import click
 
-from embryostage.preprocess.EmbryoFinder import EmbryoFinder
-
-
-# %% Set all parameters here.
-
-# Paths to the input and output folders.
-topdir = "/mnt/embryostage-local/celegans_embryos_dataset"
-input_path = Path(topdir, "230817_N2_heatshock_raw.zarr").expanduser()
-output_path = Path(topdir, "230817_N2_heatshock_test").expanduser()
+from embryostage.metadata import load_dataset_metadata
+from embryostage.preprocess.embryo_finder import EmbryoFinder
 
 
-# FOVs to process.
-# Check the annotations for each FOV, if it is reanalyzed.
-FOVs = [f"fov{i}" for i in range(10)]
+@click.option("--data-dirpath", type=Path, help="Path to the data directory")
+@click.option("--dataset-id", type=str, help="The ID of the dataset to process")
+@click.command()
+def find_embryos(data_dirpath, dataset_id):
+    '''
+    This is a wrapper for calling EmbryoFinder.find_embryos()
+    '''
 
-# Parameters of the imaging experiment.
-xy_sampling = 0.22  # Sampling in um/pixel in the sample plane.
-t_sampling = 300  # Sampling in seconds/frame.
-l_embryo = 65  # Length of the embryo in um.
-d_embryo = 32.5  # Diameter of the embryo in um.
+    input_path = data_dirpath / 'raw_data' / dataset_id
+    output_path = data_dirpath / 'cropped_embryos' / dataset_id
 
-# Biological parameters.
-date_stamp = "230817"
-strain = "N2"
-perturbation = "heatshock"
+    if not input_path.exists():
+        raise FileNotFoundError(
+            f"No raw_data directory for dataset '{dataset_id}' found in {data_dirpath}"
+        )
 
-# viewer = napari.Viewer()
-# napari.run()
+    # Load the metadata for the dataset
+    dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)
 
-# %% Run the EmbryoFinder.
-embryo_finder = EmbryoFinder(
-    input_path,
-    date_stamp,
-    FOVs,
-    xy_sampling,
-    t_sampling,
-    l_embryo,
-    d_embryo,
-    output_path,
-    strain,
-    perturbation,
-)
+    # hard-coded list of FOV IDs (assumes there are at most 99 FOVs)
+    # TODO (KC): get the fov_ids from the metadata
+    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
 
-embryo_finder.find_embryos()
+    embryo_finder = EmbryoFinder(
+        input_path=input_path,
+        output_path=output_path,
+        fov_ids=fov_ids,
+        xy_sampling_um=float(dataset_metadata.xy_sampling_um),
+        t_sampling_sec=int(dataset_metadata.t_sampling_sec),
+        embryo_length_um=float(dataset_metadata.embryo_length_um),
+        embryo_diameter_um=float(dataset_metadata.embryo_diameter_um),
+    )
 
-# %%
+    embryo_finder.find_embryos()
+
+
+if __name__ == '__main__':
+    find_embryos()

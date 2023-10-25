@@ -7,7 +7,7 @@ We use zarr format to store the N-dimensional data and metadata. The data acquir
 
 We use [nd2] and [iohub] to convert the Nikon ND2 format to ome-zarr format.
 
-* Use [nd2omezarr](../src/embryostage/scripts/nd2omezarr.py), and update `n2_path` and `ome_zarr_path` paths.
+* Use [convert_nd2_to_ome_zarr](../src/embryostage/scripts/convert_nd2_to_ome_zarr.py), and update `n2_path` and `ome_zarr_path` paths.
 * After the conversion you should have a zarr store with this structure.
 ```
 230817_N2_heatshock_raw.zarr/
