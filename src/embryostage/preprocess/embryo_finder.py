@@ -113,7 +113,7 @@ class EmbryoFinder:
         """
         Find and crop C. elegans embryos in the time series in all FOVs in the dataset
         """
-        with multiprocessing.Pool() as pool:
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
             pool.map(self._find_embryos_in_fov, self.fov_ids)
 
     def _find_embryos_in_fov(self, fov_id):
