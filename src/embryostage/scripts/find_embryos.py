@@ -24,8 +24,7 @@ def find_embryos(data_dirpath, dataset_id):
     # Load the metadata for the dataset
     dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)
 
-    # hard-coded list of FOV IDs (assumes there are at most 99 FOVs)
-    # TODO (KC): get the fov_ids from the metadata
+    # the list of all FOV IDs in the dataset
     fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
 
     embryo_finder = EmbryoFinder(

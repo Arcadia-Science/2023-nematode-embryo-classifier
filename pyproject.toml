@@ -24,6 +24,7 @@ dependencies = [
     "natsort",
     "napari[all]",
     "napari-ome-zarr",
+    "matplotlib",
     "scikit-image",
     "scikit-learn",
     "torchvision",
