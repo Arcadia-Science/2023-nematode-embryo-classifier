@@ -8,7 +8,7 @@ import zarr
 from tqdm import tqdm
 
 from embryostage.models.classification import SulstonNet
-from embryostage.preprocess.utils import get_movie_paths
+from embryostage.preprocess.utils import get_cropped_embryo_filepaths
 
 # %%  Load a trained model from a checkpoint
 checkpoint_path = (
@@ -51,7 +51,9 @@ strain = "N2"
 perturbation = "heatshock"
 date_stamp = "230817"
 FOVs = range(99)
-movie_paths = get_movie_paths(database_path, strain, perturbation, date_stamp, FOVs)
+movie_paths = get_cropped_embryo_filepaths(
+    database_path, strain, perturbation, date_stamp, FOVs
+)
 
 
 # %% Add "raw" channel to the list of channels.
