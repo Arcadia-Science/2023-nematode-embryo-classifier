@@ -27,7 +27,6 @@ metadata_csv = Path(
 
 channel_combinations = {
     "sulstonNet_heatshock_7classes_raw": ["raw"],
-    "sulstonNet_heatshock_7classes_flow": ["optical_flow"],
     "sulstonNet_heatshock_7classes_moving_mean_std": [
         "moving_mean",
         "moving_std",

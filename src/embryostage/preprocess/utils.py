@@ -13,7 +13,6 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
         features = [
             "moving_std",
             "moving_mean",
-            "optical_flow",
             "raw",
         ]
     # Assuming movie is a T*XY numpy array
