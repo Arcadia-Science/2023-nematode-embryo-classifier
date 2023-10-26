@@ -136,7 +136,6 @@ class EmbryoFinder:
 
                 self._plot_results(
                     method="otsu",
-                    fov_id=fov_id,
                     embryo_bounding_boxes=embryo_bounding_boxes,
                     time_series_std=time_series_std,
                     smooth_projection=smooth_projection,
@@ -176,10 +175,9 @@ class EmbryoFinder:
 
                 output_store[:] = cropped_series
 
+    @staticmethod
     def _plot_results(
-        self,
         method,
-        fov_id,
         embryo_bounding_boxes,
         time_series_std,
         smooth_projection,
