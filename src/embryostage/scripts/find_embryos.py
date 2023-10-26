@@ -1,12 +1,12 @@
-from pathlib import Path
 import click
 
+from embryostage.cli import options as cli_options
 from embryostage.metadata import load_dataset_metadata
 from embryostage.preprocess.embryo_finder import EmbryoFinder
 
 
-@click.option("--data-dirpath", type=Path, help="Path to the data directory")
-@click.option("--dataset-id", type=str, help="The ID of the dataset to process")
+@cli_options.data_dirpath_option
+@cli_options.dataset_id_option
 @click.command()
 def find_embryos(data_dirpath, dataset_id):
     '''

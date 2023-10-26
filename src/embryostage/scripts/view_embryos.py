@@ -1,13 +1,13 @@
-import pathlib
 import click
 import napari
 import zarr
 
+from embryostage.cli import options as cli_options
 from embryostage.preprocess.utils import get_movie_paths
 
 
-@click.option("--data-dirpath", type=pathlib.Path, help="Path to the data directory")
-@click.option("--dataset-id", type=str, help="The ID of the dataset")
+@cli_options.data_dirpath_option
+@cli_options.dataset_id_option
 @click.option("--fov-ids", type=str, help="The IDs of the FOVs as a comma-separated list")
 @click.command()
 def view_embryos(data_dirpath, dataset_id, fov_ids):
