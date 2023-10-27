@@ -21,10 +21,7 @@ def train_models(data_dirpath):
     '''
     channel_combinations = {
         "sulstonNet_heatshock_7classes_raw": ["raw"],
-        "sulstonNet_heatshock_7classes_moving_mean_std": [
-            "moving_mean",
-            "moving_std",
-        ],
+        "sulstonNet_heatshock_7classes_moving_mean_std": ["moving_mean", "moving_std"],
     }
 
     for experiment_name, channel_names in channel_combinations.items():

@@ -136,7 +136,7 @@ class EmbryoDataModule(pl.LightningDataModule):
         self.metadata_csv = metadata_csv
         self.split = split
         self.batch_size = batch_size
-        self.blance_classes = balance_classes
+        self.balance_classes = balance_classes
         self.transform = transforms.Compose(
             [
                 transforms.RandFlip(prob=0.5, spatial_axis=(0, 1)),
@@ -199,7 +199,7 @@ class EmbryoDataModule(pl.LightningDataModule):
         return default_collate(transformed_batch)
 
     def train_dataloader(self):
-        if self.blance_classes:
+        if self.balance_classes:
             dataloader = DataLoader(
                 self.train_dataset,
                 self.batch_size,
