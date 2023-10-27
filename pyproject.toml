@@ -10,7 +10,8 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
     { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" },
-    { name = "Dave Matus", email = "dave.matus@arcadiascience.com"},
+    { name = "Dave Matus", email = "dave.matus@arcadiascience.com" },
+    { name = "Keith Cheveralls", email = "keith.cheveralls@arcadiascience.com" },
 ]
 dependencies = [
     "iohub==0.1.0.dev4",
@@ -24,6 +25,9 @@ dependencies = [
     "natsort",
     "napari[all]",
     "napari-ome-zarr",
+    "matplotlib",
+    "opencv-python-headless", # Headless version of opencv-python is needed to avoid conflict with qtpy's plugins.
+    # https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/7
     "scikit-image",
     "scikit-learn",
     "torchvision",
@@ -31,13 +35,11 @@ dependencies = [
     "monai",
     "tensorboard",
     "tqdm",
-    ]
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-metrics = [
-    "torchmetrics[detection]>=1.0.0",
-]
+metrics = ["torchmetrics[detection]>=1.0.0"]
 dev = [
     "black~=22.3",
     "flake8~=5.0",
