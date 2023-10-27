@@ -29,7 +29,9 @@ dependencies = [
   "napari[all]",
   "napari-ome-zarr",
   "matplotlib",
-  "opencv-python",
+  # note: headless version of opencv-python is needed to avoid conflict with qtpy's plugins
+  # https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/7
+  "opencv-python-headless",
   "scikit-image",
   "scikit-learn",
   "torchvision",
