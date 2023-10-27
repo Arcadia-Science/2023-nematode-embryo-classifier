@@ -148,22 +148,6 @@ class EmbryoFinder:
                 embryo_id = self.bounding_box_to_id(embryo_bounding_box)
                 embryo_path = fov_output_path / f'embryo-{embryo_id}.zarr'
 
-                output_shape = (
-                    time_series.shape[0],
-                    time_series.shape[1],
-                    time_series.shape[2],
-                    int(self.embryo_length_pix - 1),
-                    int(self.embryo_length_pix - 1),
-                )
-
-                output_store = zarr.creation.open_array(
-                    embryo_path,
-                    mode="w",
-                    shape=output_shape,
-                    chunks=output_shape,
-                    dtype=time_series.dtype,
-                )
-
                 cropped_series = time_series[
                     :,
                     :,
@@ -172,6 +156,14 @@ class EmbryoFinder:
                     embryo_bounding_box["xmin"] : embryo_bounding_box["xmax"],
                 ]
 
+                output_shape = cropped_series.shape
+                output_store = zarr.creation.open_array(
+                    embryo_path,
+                    mode="w",
+                    shape=output_shape,
+                    chunks=output_shape,
+                    dtype=time_series.dtype,
+                )
                 output_store[:] = cropped_series
 
     @staticmethod
