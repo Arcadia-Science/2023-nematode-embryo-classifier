@@ -32,7 +32,7 @@ dataset_id,fov_id,old_embryo_id,new_embryo_id,stage_1,t_start_1,t_end_1,stage_2,
 230719,3,4,1004-0439,proliferation,2,22,bean,23,37,comma,38,39,fold,40,122,hatch,123,165,
 230719,3,5,0146-0922,proliferation,2,34,bean,35,51,comma,52,53,fold,54,144,hatch,145,165,
 230719,3,6,0476-0960,proliferation,2,42,bean,43,54,comma,55,56,fold,57,153,hatch,154,165,
-230719,30,2,0375-0320,proliferation,2,34,bean,35,56,comma,57,58,fold,59,72,death,73,165,"embryo is abnormal from beginning, but makes it through comma and beginning of fold, and then starts dying at frame 73"
+230719,30,2,0375-0320,proliferation,2,44,bean,45,59,comma,60,61,fold,62,147,hatch,148,165,"embryo is abnormal from beginning, but makes it through comma and beginning of fold, and then starts dying at frame 73"
 230719,4,0,1026-0179,proliferation,2,25,bean,26,35,comma,36,37,fold,38,122,hatch,123,165,
 230719,4,1,0995-0286,proliferation,2,16,bean,17,23,comma,24,25,fold,26,112,hatch,113,165,
 230719,4,2,0418-0348,proliferation,2,31,bean,32,40,comma,41,42,fold,43,128,hatch,129,165,
@@ -48,12 +48,25 @@ dataset_id,fov_id,old_embryo_id,new_embryo_id,stage_1,t_start_1,t_end_1,stage_2,
 230719,7,0,0589-0498,proliferation,2,38,bean,39,54,comma,55,56,fold,57,147,hatch,148,165,
 230719,7,1,0653-0744,proliferation,2,41,bean,42,55,comma,56,57,fold,58,122,,,,starts leaving frame in 123
 230719,7,2,0238-0943,proliferation,2,40,bean,41,52,comma,53,54,fold,55,138,hatch,139,165,"starts leaving frame in 137, but you can see the hatch in frame 139"
-230719,77,3,0081-0920,proliferation,2,31,death,32,165,,,,,,,,,,embryo never makes it out of proliferation stage - brownian motion seems to begin at frame 32
+230719,77,3,0081-0920,proliferation,2,51,death,52,165,,,,,,,,,,embryo never makes it out of proliferation stage - brownian motion seems to begin at frame 32
 230719,8,0,0737-0247,fold,2,73,hatch,74,165,,,,,,,,,,
 230719,8,1,0181-0814,proliferation,2,5,bean,6,20,comma,21,22,fold,23,114,hatch,115,165,
-230719,9,0,0274-0617,proliferation,2,36,bean,37,44,comma,45,46,fold,47,135,hatch,136,165,dead embryo in FOV from frame 116-167
+230719,9,0,0274-0617,proliferation,2,36,bean,37,44,comma,45,46,fold,47,135,hatch,136,165,
 230817,4,0,2014-0983,unfertilized,2,109,,,,,,,,,,,,,
-230817,5,0,1812-1497,proliferation,2,43,bean,44,65,comma,66,67,death,73,176,,,,
+230817,5,0,1812-1497,proliferation,2,43,bean,44,65,comma,66,67,fold,68,97,death,98,176,
 230817,25,1,0550-0633,unfertilized,2,153,,,,,,,,,,,,,
-230817,57,1,2085-1116,proliferation,2,38,bean,39,54,comma,55,65,fold,66,72,death,73,176,
+230817,57,1,2085-1116,proliferation,2,38,bean,39,54,comma,55,65,fold,66,116,death,117,174,
 230817,64,0,1647-0988,unfertilized,2,92,,,,,,,,,,,,,
+231011,63,0,0431-0733,proliferation,2,39,death,40,189,,,,,,,,,,
+231011,67,0,0417-0534,fold,2,36,death,37,189,,,,,,,,,,
+231011,67,1,1951-0566,proliferation,2,29,death,30,189,,,,,,,,,,
+231011,68,0,0379-0678,proliferation,2,8,bean,9,44,death,45,189,,,,,,,
+231011,75,3,1210-1268,fold,2,75,death,76,189,,,,,,,,,,
+231011,75,1,1290-1033,proliferation,2,26,bean,27,39,death,40,189,,,,,,,
+231011,75,2,1841-1251,fold,2,44,death,45,189,,,,,,,,,,
+231011,84,0,1140-0180,proliferation,2,11,bean,12,30,death,31,189,,,,,,,
+231011,84,1,1676-0607,fold,2,71,death,72,189,,,,,,,,,,
+231011,84,2,1797-1390,bean,2,22,death,23,189,,,,,,,,,,
+231011,86,0,1545-0581,fold,2,75,death,76,189,,,,,,,,,,
+231011,94,0,0868-2080,fold,2,65,death,66,189,,,,,,,,,,
+231011,145,0,1163-0415,proliferation,2,49,death,50,189,,,,,,,,,,
