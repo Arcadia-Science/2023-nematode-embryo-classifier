@@ -16,13 +16,19 @@ def encode_dynamics(data_dirpath, dataset_id):
     Call compute_morphodynamics() on all cropped embryos in a dataset and save the results
     '''
 
-    dataset_dirpath = data_dirpath / "cropped_embryos" / dataset_id
+    input_path = data_dirpath / 'cropped_embryos' / dataset_id
+    output_path = data_dirpath / 'encoded_dynamics' / dataset_id
+
+    if not input_path.exists():
+        raise FileNotFoundError(
+            f"No cropped_embryos directory for dataset '{dataset_id}' found in {data_dirpath}"
+        )
 
     # the list of all FOV IDs in the dataset
-    fov_ids = [dirpath.name for dirpath in dataset_dirpath.glob('fov*')]
+    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
 
     for fov_id in fov_ids:
-        cropped_embryo_filepaths = list((dataset_dirpath / fov_id).glob("embryo-*"))
+        cropped_embryo_filepaths = list((input_path / fov_id).glob("embryo-*"))
         if not cropped_embryo_filepaths:
             print(f"No embryos found for FOV '{fov_id}' in dataset '{dataset_id}'")
             continue
@@ -36,7 +42,11 @@ def encode_dynamics(data_dirpath, dataset_id):
             feature_dict = {
                 features[n]: feature_images[:, n, ...] for n in range(len(features))
             }
-            zarr.save_group(Path(cropped_embryo_filepath, "dynamic_features"), **feature_dict)
+
+            encoded_dynamics_filepath = output_path / fov_id / cropped_embryo_filepath.name
+            zarr.save_group(
+                Path(encoded_dynamics_filepath, "dynamic_features"), **feature_dict
+            )
 
 
 if __name__ == '__main__':
