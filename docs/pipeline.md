@@ -82,8 +82,7 @@ models
     │   ├── events.out.tfevents.1693905250.SFO-IT0770.czbiohub.org.6782.1
 ```
 
-## evaluate a classifier
-
+## Evaluate a classifier
 * Use tensorboard to view the logs. 
 ```
 tensorboard --logdir /mnt/embryostage-local/celegans_embryos_dataset/models/lightning_logs/ &
@@ -102,11 +101,22 @@ After tensorboard launches, forward the port 6006 to your local computer to be a
     * Test confusion matrix computed at the end of the training.
     ![Alt text](tensorboard_test_confusion.png)
 
-
 * You can also view the predictions overlaid on samples of training and validation datasets. 
 
-##  use a classifier
 
+##  Use a classifier
 * Use [view_embryo_classification](../src/embryostage/scripts/view_embryo_classification.py) script to view the classification of an embryo overlaid on the image using napari.
+
+For example:
+```sh
+python src/embryostage/scripts/view_embryo_classification.py \
+--checkpoint-filepath /path/to/model-checkpoints/lightning_logs/sulstonNet_heatshock_7classes_raw/checkpoints/checkpoint-epoch=17-val_loss=0.12.ckpt \
+--data-dirpath /path/to/datasets/encoded_dynamics \
+--dataset-id 230719 \
+--fov-id 0 \
+--embryo-id 0181-0141 \
+--channels-type raw-only
+```
+
 
 * Use [batch_classify_embryos](../src/embryostage/scripts/batch_classify_embryos.py) to classify the developmental stage of many embryos at each of the frames.
