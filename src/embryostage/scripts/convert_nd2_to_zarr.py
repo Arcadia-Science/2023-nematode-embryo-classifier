@@ -34,7 +34,7 @@ def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
     # Loop through each position in the nd2 file
     print(f"converting {nd2_path} to {ome_zarr_path}")
 
-    for pos in tqdm(range(3)):
+    for pos in tqdm(range(num_positions)):
         # Get the dask array for the current position
         pos_dask = nd2_dask[:, pos, :, :].rechunk(chunks=(num_timepoints, size_y, size_x))
 
@@ -52,7 +52,7 @@ def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
 
         # Create an image in the ome-zarr file for the current position
         pos_zarr.create_image(
-            data=pos_array, name="raw", chunks=(num_positions, 1, 1, size_y, size_x)
+            data=pos_array, name="raw", chunks=(num_timepoints, 1, 1, size_y, size_x)
         )
 
         # Close the ome-zarr file for the current position
