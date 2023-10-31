@@ -1,10 +1,5 @@
 from pathlib import Path
-
-try:
-    import cv2
-except ModuleNotFoundError:
-    print("Warning: cv2 not found. Some features will not be available.")
-
+import cv2
 import numpy as np
 
 
