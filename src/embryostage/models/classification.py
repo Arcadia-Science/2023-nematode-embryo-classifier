@@ -7,14 +7,9 @@ import torchmetrics
 from torch import nn
 from torchvision import models
 
-# Define DataModule
 
-
-# Load pre-trained ResNet
 class SulstonNet(pl.LightningModule):
     def __init__(self, in_channels=2, n_classes=5, index_to_label=None, xy_size=224):
-        # We will use "morphology" and "dynamics" channels as inputs.
-        # Define a model.
         super(SulstonNet, self).__init__()
         self.n_classes = n_classes
         self.index_to_label = index_to_label
@@ -240,8 +235,3 @@ def plot_confusion_matrix(confusion_matrix, index_to_label):
             )
 
     return fig
-
-
-# TODO: Implement a self-supervised contrastive classifier.
-# Idea: images of the same embryo in neighboring frames are a positive pairs.
-# Train the model such that distance between images represents developmental distance.
