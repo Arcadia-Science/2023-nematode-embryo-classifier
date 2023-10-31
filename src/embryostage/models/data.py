@@ -17,7 +17,7 @@ class EmbryoDataset(Dataset):
     def __init__(
         self, data_dirpath, channel_names, annotations_csv, metadata_csv, transform=None
     ):
-        self.data_dirpath = data_dirpath
+        self.data_dirpath = Path(data_dirpath)
 
         # The length of this list indicates the number of channels
         # from which stage is predicted.

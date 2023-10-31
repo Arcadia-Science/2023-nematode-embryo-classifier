@@ -11,7 +11,10 @@ license = { file = "LICENSE" }
 authors = [
   { name = "Shalin Mehta", email = "shalin.mehta@gmail.com" },
   { name = "Dave Matus", email = "dave.matus@arcadiascience.com" },
+  { name = "Keith Cheveralls", email = "keith.cheveralls@arcadiascience.com" },
 ]
+
+# TODO: pin versions of all dependencies here
 dependencies = [
   "iohub==0.1.0.dev4",
   "nd2",

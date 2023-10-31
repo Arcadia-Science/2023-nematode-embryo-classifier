@@ -19,12 +19,12 @@ def test_annotations():
     metadata_path = REPO_DIRPATH / "ground_truth" / "embryo_metadata.csv"
 
     # TODO (KC): replace this with a test dataset
-    database_path = Path(
+    data_dirpath = Path(
         "~/docs/data/predict_development/celegans_embryos_dataset"
     ).expanduser()
 
     link_annotations_to_zarrs(
-        annotations_path,
-        database_path,
-        metadata_path,
+        data_dirpath=data_dirpath,
+        annotations_path=annotations_path,
+        metadata_path=metadata_path,
     )
