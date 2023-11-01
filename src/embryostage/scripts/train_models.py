@@ -20,6 +20,9 @@ def train_models(data_dirpath):
     random_seed = 2023
     pl.seed_everything(random_seed)
 
+    # the data used for training is in the 'encoded_dynamics' subdirectory
+    data_dirpath = data_dirpath / 'encoded_dynamics'
+
     channel_combinations = {
         "sulstonNet_heatshock_7classes_raw": ["raw"],
         "sulstonNet_heatshock_7classes_moving_mean_std": ["moving_mean", "moving_std"],
