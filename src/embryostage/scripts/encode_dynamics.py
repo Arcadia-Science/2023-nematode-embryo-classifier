@@ -1,45 +1,53 @@
-# %% Import packages
 from pathlib import Path
+import click
 import zarr
 
 from tqdm import tqdm
 
+from embryostage.cli import options as cli_options
 from embryostage.preprocess.utils import compute_morphodynamics
 
-# %%
-if __name__ == "__main__":
-    database_path = "~/data/predict_development/celegans_embryos_dataset"
-    strain = "N2"
-    perturbation = "heatshock"
-    date_stamp = "230817"
-    FOVs = [str(x) for x in range(99)]
-    pyramid_level = "0"
 
-    all_embryos = Path(
-        database_path,
-        f"{date_stamp}_{strain}_{perturbation}",
-    ).expanduser()
+@cli_options.data_dirpath_option
+@cli_options.dataset_id_option
+@click.command()
+def encode_dynamics(data_dirpath, dataset_id):
+    '''
+    Call compute_morphodynamics() on all cropped embryos in a dataset and save the results
+    '''
 
-    for fov in FOVs:
-        # Find all movies in an FOV.
-        movie_paths = all_embryos.glob(f"{date_stamp}_{fov}/embryo*")
+    input_path = data_dirpath / 'cropped_embryos' / dataset_id
+    output_path = data_dirpath / 'encoded_dynamics' / dataset_id
 
-        movie_paths = list(movie_paths)
-        if not movie_paths:
-            print(
-                f"No movie found at {date_stamp}_{strain}_{perturbation}"
-                f"{date_stamp}_{fov}. Check the date stamp and FOV numbers."
-            )
+    if not input_path.exists():
+        raise FileNotFoundError(
+            f"No cropped_embryos directory for dataset '{dataset_id}' found in {data_dirpath}"
+        )
+
+    # the list of all FOV IDs in the dataset
+    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
+
+    for fov_id in fov_ids:
+        cropped_embryo_filepaths = list((input_path / fov_id).glob("embryo-*"))
+        if not cropped_embryo_filepaths:
+            print(f"No embryos found for FOV '{fov_id}' in dataset '{dataset_id}'")
             continue
 
-        print(f"Computing morphodynamics for FOV {fov}:")
+        print(f"Computing morphodynamics for embryos from FOV '{fov_id}'")
 
-        for movie_path in tqdm(movie_paths):
-            # movie = open_ome_zarr(movie_path)[pyramid_level]
-            movie = zarr.open(str(movie_path), mode="r")
-            feature_imgs, features = compute_morphodynamics(movie)
-            feature_dict = {features[n]: feature_imgs[:, n, ...] for n in range(len(features))}
+        for cropped_embryo_filepath in tqdm(cropped_embryo_filepaths):
+            cropped_embryo = zarr.open(str(cropped_embryo_filepath), mode="r")
+            feature_images, features = compute_morphodynamics(cropped_embryo)
+
+            feature_dict = {
+                features[n]: feature_images[:, n, ...] for n in range(len(features))
+            }
+
+            encoded_dynamics_filepath = output_path / fov_id / cropped_embryo_filepath.name
             zarr.save_group(
-                Path(movie_path, "dynamic_features"),
-                **feature_dict,
+                Path(encoded_dynamics_filepath, "dynamic_features"), **feature_dict
             )
+
+
+if __name__ == '__main__':
+    encode_dynamics()

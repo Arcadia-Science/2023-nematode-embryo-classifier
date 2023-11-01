@@ -1,4 +1,3 @@
-# %% Imports and classes.
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,8 +24,6 @@ class EmbryoFinder:
         Path to the output zarr store.
     xy_sampling_um : int
         Sampling rate in the x and y dimensions in microns
-    t_sampling_sec : int
-        Sampling rate in the time dimension in seconds.
     embryo_length_um : int
         Length of the embryo in microns.
     embryo_diameter_um : int
@@ -50,7 +47,6 @@ class EmbryoFinder:
         input_path,
         fov_ids,
         xy_sampling_um,
-        t_sampling_sec,
         embryo_length_um,
         embryo_diameter_um,
         output_path,
@@ -66,8 +62,6 @@ class EmbryoFinder:
             List of field of view (FOV) IDs (typically numbers).
         xy_sampling_um : int
             Pixel size in the x and y dimensions in microns/pixel.
-        t_sampling_sec : int
-            Sampling interval in the time dimension in seconds/frame.
         embryo_length_um : int
             Length of the embryo in microns.
         embryo_diameter_um : int
@@ -80,7 +74,6 @@ class EmbryoFinder:
         self.fov_ids = fov_ids
         self.output_path = output_path
         self.xy_sampling_um = xy_sampling_um
-        self.t_sampling_sec = t_sampling_sec
         self._embryo_length_um = embryo_length_um
         self._embryo_diameter_um = embryo_diameter_um
 
@@ -142,7 +135,6 @@ class EmbryoFinder:
 
                 self._plot_results(
                     method="otsu",
-                    fov_id=fov_id,
                     embryo_bounding_boxes=embryo_bounding_boxes,
                     time_series_std=time_series_std,
                     smooth_projection=smooth_projection,
@@ -174,10 +166,9 @@ class EmbryoFinder:
                 )
                 output_store[:] = cropped_series
 
+    @staticmethod
     def _plot_results(
-        self,
         method,
-        fov_id,
         embryo_bounding_boxes,
         time_series_std,
         smooth_projection,

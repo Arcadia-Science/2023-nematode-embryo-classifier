@@ -7,7 +7,7 @@
 from pathlib import Path
 import pytest
 
-from embryostage.models.data import link_annotations2zarrs
+from embryostage.models.data import link_annotations_to_zarrs
 
 # TODO (KC): move this to a fixture
 REPO_DIRPATH = Path(__file__).parent.parent
@@ -19,12 +19,12 @@ def test_annotations():
     metadata_path = REPO_DIRPATH / "ground_truth" / "embryo_metadata.csv"
 
     # TODO (KC): replace this with a test dataset
-    database_path = Path(
+    data_dirpath = Path(
         "~/docs/data/predict_development/celegans_embryos_dataset"
     ).expanduser()
 
-    link_annotations2zarrs(
-        annotations_path,
-        database_path,
-        metadata_path,
+    link_annotations_to_zarrs(
+        data_dirpath=data_dirpath,
+        annotations_path=annotations_path,
+        metadata_path=metadata_path,
     )

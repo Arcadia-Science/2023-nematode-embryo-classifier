@@ -1,12 +1,12 @@
-from pathlib import Path
 import click
 
+from embryostage.cli import options as cli_options
 from embryostage.metadata import load_dataset_metadata
 from embryostage.preprocess.embryo_finder import EmbryoFinder
 
 
-@click.option("--data-dirpath", type=Path, help="Path to the data directory")
-@click.option("--dataset-id", type=str, help="The ID of the dataset to process")
+@cli_options.data_dirpath_option
+@cli_options.dataset_id_option
 @click.command()
 def find_embryos(data_dirpath, dataset_id):
     '''
@@ -24,8 +24,7 @@ def find_embryos(data_dirpath, dataset_id):
     # Load the metadata for the dataset
     dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)
 
-    # hard-coded list of FOV IDs (assumes there are at most 99 FOVs)
-    # TODO (KC): get the fov_ids from the metadata
+    # the list of all FOV IDs in the dataset
     fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
 
     embryo_finder = EmbryoFinder(
@@ -33,7 +32,6 @@ def find_embryos(data_dirpath, dataset_id):
         output_path=output_path,
         fov_ids=fov_ids,
         xy_sampling_um=float(dataset_metadata.xy_sampling_um),
-        t_sampling_sec=int(dataset_metadata.t_sampling_sec),
         embryo_length_um=float(dataset_metadata.embryo_length_um),
         embryo_diameter_um=float(dataset_metadata.embryo_diameter_um),
     )

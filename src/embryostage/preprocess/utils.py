@@ -1,10 +1,5 @@
 from pathlib import Path
-
-try:
-    import cv2
-except ModuleNotFoundError:
-    print("Warning: cv2 not found. Some features will not be available.")
-
+import cv2
 import numpy as np
 
 
@@ -13,7 +8,6 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
         features = [
             "moving_std",
             "moving_mean",
-            "optical_flow",
             "raw",
         ]
     # Assuming movie is a T*XY numpy array
@@ -87,7 +81,7 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
     return feature_imgs, features
 
 
-def get_movie_paths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
+def get_cropped_embryo_filepaths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
     '''
     get the paths to all embryo timelapses/movies for a given dataset and set of FOVs
     '''
