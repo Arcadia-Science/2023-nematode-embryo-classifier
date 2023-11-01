@@ -1,3 +1,4 @@
+import pathlib
 import click
 import monai.transforms as transforms
 import numpy as np
@@ -19,12 +20,12 @@ from embryostage.models.data import EmbryoDataModule, EmbryoDataset
     help='The datasets to use for training, as a comma-separated list',
 )
 @click.option(
-    '--logs-dirname',
-    type=str,
-    help='The name of the directory to which to write the training logs',
+    '--logs-dirpath',
+    type=pathlib.Path,
+    help='The directory to which to write the training logs',
 )
 @click.command()
-def train_models(data_dirpath, logs_dirname, dataset_ids):
+def train_models(data_dirpath, logs_dirpath, dataset_ids):
     '''
     train models for embryo classification using different combinations of channels
     '''
@@ -78,9 +79,7 @@ def train_models(data_dirpath, logs_dirname, dataset_ids):
         print(summary(model, model.example_input_array, show_hierarchical=False, max_depth=2))
 
         logger = pl.loggers.TensorBoardLogger(
-            data_dirpath / 'models' / logs_dirname,
-            version=f"{experiment_name}",
-            log_graph=True,
+            logs_dirpath, version=f"{experiment_name}", log_graph=True
         )
 
         # saves top-K checkpoints based on "val_loss" metric
