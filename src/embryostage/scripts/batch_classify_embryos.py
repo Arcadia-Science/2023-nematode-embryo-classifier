@@ -22,7 +22,9 @@ from embryostage.models.classification import SulstonNet
     help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
 )
 @click.option(
-    '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
+    '--checkpoint-filepath',
+    type=Path,
+    help='The path to the model checkpoint (.ckpt) file',
 )
 @click.command()
 def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_filepath):
@@ -98,10 +100,12 @@ def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_f
     all_predicted_labels = pd.DataFrame(all_predicted_labels)
 
     timestamp = pd.Timestamp.now().strftime("%Y-%m-%d")
+
+    # write the predictions to a CSV file in the checkpoint's parent directory
+    # (this is a hackish way to associate the predictions with the model that generated them)
     csv_path = (
-        data_dirpath
-        / 'predicted_classifications'
-        / f'{timestamp}--dataset-{dataset_id}--classifications.csv'
+        checkpoint_filepath.parent.parent
+        / f'{timestamp}-predictions--from-{checkpoint_filepath.stem}--for-{dataset_id}.csv'
     )
 
     os.makedirs(csv_path.parent, exist_ok=True)
