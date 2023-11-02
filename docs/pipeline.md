@@ -98,7 +98,6 @@ Like the prior scripts, this script requires the `--data-dirpath` option; it loa
 └── lightning_logs
     └── SulstonNet_raw
         ├── checkpoints
-        ├── events.out.tfevents.1698686529.{system_name}.55347.0
         └── hparams.yaml
 ```
 
