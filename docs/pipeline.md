@@ -1,4 +1,4 @@
-# EmryoStage pipeline
+# EmbryoStage pipeline
 This document describes how to process, view, and annotate the raw label-free images of developing embryos used in this project. It also describes how to train a classifier to predict embryo developmental stage from such images. 
 
 ## Data organization
@@ -11,11 +11,11 @@ The output of each script below is written to a separate subdirectory of this lo
 ## Step 1: Convert nd2 files to ome-zarr
 We use the `nd2` and `iohub` packages to convert the Nikon ND2 format to ome-zarr format. 
 
-The conversion is performed by the [`convert_nd2_to_ome_zarr.py`](../src/embryostage/scripts/convert_nd2_to_ome_zarr.py) script. The user must specify the path to both the nd2 file and to the output directory. __The name of the output directory must be the `dataset_id`.__
+The conversion is performed by the `convert-nd2-to-zarr` command. The user must specify the path to both the nd2 file and to the output directory. __The name of the output directory must be the `dataset_id`.__
 
 For example, to convert a dataset whose ID is `'230719'`:
 ```sh
-python src/embryostage/scripts/convert_nd2_to_zarr.py  \
+convert-nd2-to-zarr \
     --nd2-path /path/to/raw-data/230719/ChannelBF 20x_Seq0012.nd2 \
     --ome-zarr-path /path/to/processed-data/raw_data/230719
 ```
@@ -39,12 +39,11 @@ napari --plugin napari-ome-zarr 230719/fov0/ 230719/fov10 &
 
 
 ## Step 2: Segment embryos
-The [`find_embryos.py`](../src/embryostage/scripts/find_embryos.py) script identifies embryos, crops ROIs around them, and writes the ROIs to zarr stores. The script requires a `--data-dirpath` option and `--dataset-id` option. It writes the cropped embryo zarr stores to the `cropped_embryos` subdirectory of the `data_dirpath` directory. 
+The `find-embryos` command identifies embryos, crops ROIs around them, and writes the ROIs to zarr stores. The script requires a `--data-dirpath` option and `--dataset-id` option. It writes the cropped embryo zarr stores to the `cropped_embryos` subdirectory of the `data_dirpath` directory. 
 
 For example:
 ```sh
-python src/embryostage/scripts/find_embryos.py \
-    --data-dirpath /path/to/processed-data/ --dataset-id 230719
+find-embryos --data-dirpath /path/to/processed-data/ --dataset-id 230719
 ```
 
 Within the `data_dirpath` directory, this script generates the following directory structure:
@@ -60,12 +59,11 @@ There are often multiple embryos cropped from each FOV (and, of course, there ar
 
 
 ## Step 3: Annotate developmental stages
-Use the [`view_embryos.py`](../src/embryostage/scripts/view_embryos.py) script to create a montage of embryos from a subset of FOVs. The subset of FOVs is manually specified using the `--fov-ids` option in the form of a comma-separated list of numeric FOV indices/ids. 
+Use the `view-embryos` command to create a montage of embryos from a subset of FOVs. The subset of FOVs is manually specified using the `--fov-ids` option in the form of a comma-separated list of numeric FOV indices/ids. 
 
 For example, to view all embryos from the first three FOVs of the `'230719'` dataset:
 ```sh
-python src/embryostage/scripts/view_embryos.py \
-    --data-dirpath /path/to/processed-data/ --dataset-id 230719 --fov-ids 0,1,2
+view-embryos --data-dirpath /path/to/processed-data/ --dataset-id 230719 --fov-ids 0,1,2
 ```
 
 The manual annotations should be added to [this csv file](../ground_truth/embryo_developmental_stage.csv). These human annotations of these embryos are treated as ground truth. The training pipeline splits the embryos in the training, validation, and test sets.
@@ -74,10 +72,9 @@ Explore the annotations as interpreted by the current code path using [`explore_
 
 
 ## Step 4: Compute features
-Use the [`encode_dynamics.py`](../src/embryostage/scripts/encode_dynamics.py) script to encode the temporal dynamics (moving average, moving standard deviation, and optical flow) as channels. This script writes its output to the `encoded_dynamics` subdirectory of the `data_dirpath` directory. It has the same CLI options as the previous scripts. For example:
+Use the `encode-dynamics` command to encode the temporal dynamics (moving average, moving standard deviation, and optical flow) as channels. This script writes its output to the `encoded_dynamics` subdirectory of the `data_dirpath` directory. It has the same CLI options as the previous scripts. For example:
 ```sh
-python src/embryostage/scripts/encode_dynamics.py \
-    --data-dirpath /path/to/processed-data/ --dataset-id 230719
+encode-dynamics --data-dirpath /path/to/processed-data/ --dataset-id 230719
 ```
 
 Within the `data_dirpath` directory, this script generates the following directory structure:
@@ -90,9 +87,9 @@ encoded_dynamics
 ```
 
 ## Step 5: Train a classifier
-Use the [`train_models.py`](../src/embryostage/scripts/train_models.py) script to train a classifier using the [ground truth annotations](../ground_truth/embryo_developmental_stage.csv) of developmental stages generated by a human annotator in step (3) above and the features encoded in step (4) above. We use the PyTorch Lightning framework to structure the code for data loading, training, logging, and inference.
+Use the `train-models` command to train a classifier using the [ground truth annotations](../ground_truth/embryo_developmental_stage.csv) of developmental stages generated by a human annotator in step (3) above and the features encoded in step (4) above. We use the PyTorch Lightning framework to structure the code for data loading, training, logging, and inference.
 
-Like the prior scripts, this script requires the `--data-dirpath` option; it loads the features generated in step (4) from the `encoded_dynamics` subdirectory of `data_dirpath` for the subset of embryos (from any number of FOVs and datasets) that were manually annotated. The script also requires the `--logs-dirpath` option to specify the directory to which the training logs and model checkpoints are written. Its structure looks like this:
+Like the prior command, this command requires the `--data-dirpath` option; it loads the features generated in step (4) from the `encoded_dynamics` subdirectory of `data_dirpath` for the subset of embryos (from any number of FOVs and datasets) that were manually annotated. The script also requires the `--logs-dirpath` option to specify the directory to which the training logs and model checkpoints are written. Its structure looks like this:
 ```
 {logs_dirpath}
 └── lightning_logs
@@ -121,11 +118,11 @@ You can also view the predictions overlaid on samples of training and validation
 
 
 ## Step 7: Use a classifier
-Use the [`view_embryo_classification.py`](../src/embryostage/scripts/view_embryo_classification.py) script to view the classification of an embryo overlaid on the image using napari. This script requires a number of CLI options to specify a particular model checkpoint to use for inference and a particular embryo. 
+Use the `view-embryo-classification` script to view the classification of an embryo overlaid on the image using napari. This script requires a number of CLI options to specify a particular model checkpoint to use for inference and a particular embryo. 
 
 For example:
 ```sh
-python src/embryostage/scripts/view_embryo_classification.py \
+view-embryo-classification \
     --checkpoint-filepath /path/to/models/lightning_logs/model_name/checkpoints/checkpoint-epoch=17-val_loss=0.12.ckpt \
     --data-dirpath /path/to/processed-data/encoded_dynamics \
     --dataset-id 230719 \
@@ -134,5 +131,5 @@ python src/embryostage/scripts/view_embryo_classification.py \
     --channels-type raw-only
 ```
 
-Use [`batch_classify_embryos.py`](../src/embryostage/scripts/batch_classify_embryos.py) to predict the developmental stage at each timepoint for all cropped embryos in a given dataset. This script uses the same CLI options as the `view_embryo_classification.py` script but does not require an FOV ID or embryo ID. 
+Finally, use the `batch-classify-embryos` command to predict the developmental stage at each timepoint for all cropped embryos in a given dataset. This command uses the same CLI options as the `view-embryo-classification` command but does not require an FOV ID or embryo ID. 
 
