@@ -27,7 +27,7 @@ from embryostage.models.classification import SulstonNet
     help='The path to the model checkpoint (.ckpt) file',
 )
 @click.command()
-def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_filepath):
+def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath):
     '''
     predict the classification for all embryos in a dataset
     '''
@@ -114,4 +114,4 @@ def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_f
 
 
 if __name__ == '__main__':
-    batch_classify_embryos()
+    main()

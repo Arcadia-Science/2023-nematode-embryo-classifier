@@ -8,7 +8,7 @@ from embryostage.preprocess.embryo_finder import EmbryoFinder
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.command()
-def find_embryos(data_dirpath, dataset_id):
+def main(data_dirpath, dataset_id):
     '''
     This is a wrapper for calling EmbryoFinder.find_embryos()
     '''
@@ -40,4 +40,4 @@ def find_embryos(data_dirpath, dataset_id):
 
 
 if __name__ == '__main__':
-    find_embryos()
+    main()

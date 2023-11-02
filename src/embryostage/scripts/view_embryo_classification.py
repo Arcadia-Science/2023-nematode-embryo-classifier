@@ -23,9 +23,7 @@ from embryostage.models.classification import SulstonNet
     '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
 )
 @click.command()
-def view_embryo_classification(
-    data_dirpath, dataset_id, fov_id, embryo_id, channels_type, checkpoint_filepath
-):
+def main(data_dirpath, dataset_id, fov_id, embryo_id, channels_type, checkpoint_filepath):
     '''
     interactively view the predicted classification
     for each frame of an embryo timelapse in napari
@@ -114,4 +112,4 @@ def view_embryo_classification(
 
 
 if __name__ == '__main__':
-    view_embryo_classification()
+    main()

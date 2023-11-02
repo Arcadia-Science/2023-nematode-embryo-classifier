@@ -25,7 +25,7 @@ from embryostage.models.data import EmbryoDataModule, EmbryoDataset
     help='The directory to which to write the training logs',
 )
 @click.command()
-def train_models(data_dirpath, logs_dirpath, dataset_ids):
+def main(data_dirpath, logs_dirpath, dataset_ids):
     '''
     train models for embryo classification using different combinations of channels
     '''
@@ -100,4 +100,4 @@ def train_models(data_dirpath, logs_dirpath, dataset_ids):
 
 
 if __name__ == "__main__":
-    train_models()
+    main()

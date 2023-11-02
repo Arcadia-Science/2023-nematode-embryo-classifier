@@ -59,7 +59,14 @@ dev = [
 ]
 
 [project.scripts]
-embryostage = "embryostage.cli.cli:main"
+convert-nd2-to-zarr = "embryostage.scripts.convert_nd2_to_zarr:main"
+find-embryos = "embryostage.scripts.find_embryos:main"
+view-embryos = "embryostage.scripts.view_embryos:main"
+encode-dynamics = "embryostage.scripts.encode_dynamics:main"
+train-models = "embryostage.scripts.train_models:main"
+view-embryo-classification = "embryostage.scripts.view_embryo_classification:main"
+batch-classify-embryos = "embryostage.scripts.batch_classify_embryos:main"
+
 
 [tool.setuptools_scm]
 write_to = "src/embryostage/_version.py"
