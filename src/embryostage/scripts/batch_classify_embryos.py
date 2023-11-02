@@ -10,17 +10,20 @@ import zarr
 from tqdm import tqdm
 
 from embryostage.cli import options as cli_options
+from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
-from embryostage.scripts.view_embryo_classification import (
-    channels_type_option,
-    checkpoint_filepath_option,
-)
 
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
-@channels_type_option
-@checkpoint_filepath_option
+@click.option(
+    '--channels-type',
+    type=str,
+    help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
+)
+@click.option(
+    '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
+)
 @click.command()
 def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_filepath):
     '''
@@ -34,16 +37,6 @@ def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_f
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    index_to_label = {
-        0: "proliferation",
-        1: "bean",
-        2: "comma",
-        3: "fold",
-        4: "hatch",
-        5: "death",
-        # 6: "unfertilized",
-    }
-
     device_name = "mps"
     zarr_group_name = "dynamic_features"
 
@@ -52,9 +45,9 @@ def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_f
 
     trained_model = SulstonNet.load_from_checkpoint(
         checkpoint_filepath,
-        in_channels=len(channel_names),
-        n_classes=len(index_to_label),
-        index_to_label=index_to_label,
+        n_input_channels=len(channel_names),
+        n_classes=len(constants.EMBRYO_STAGE_INDEX_TO_LABEL),
+        index_to_label=constants.EMBRYO_STAGE_INDEX_TO_LABEL,
     )
 
     # Make sure the model is in eval mode for inference
@@ -90,10 +83,12 @@ def batch_classify_embryos(data_dirpath, dataset_id, channels_type, checkpoint_f
         # Run inference
         with torch.no_grad():
             logits = trained_model(input_tensor)
-            predicted_labels = torch.argmax(logits, axis=1)
+            predicted_label_inds = torch.argmax(logits, axis=1)
 
-        predicted_labels = predicted_labels.to("cpu").numpy()
-        predicted_labels = [index_to_label[label] for label in predicted_labels]
+        predicted_label_inds = predicted_label_inds.to("cpu").numpy()
+        predicted_labels = [
+            constants.EMBRYO_STAGE_INDEX_TO_LABEL[ind] for ind in predicted_label_inds
+        ]
         all_predicted_labels.append(
             pd.Series(
                 predicted_labels, name=f"{embryo_filepath.parent.name}_{embryo_filepath.name}"

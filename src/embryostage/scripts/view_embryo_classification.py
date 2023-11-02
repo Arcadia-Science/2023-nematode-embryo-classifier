@@ -6,25 +6,22 @@ import torch
 import zarr
 
 from embryostage.cli import options as cli_options
+from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
-
-channels_type_option = click.option(
-    '--channels-type',
-    type=str,
-    help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
-)
-
-checkpoint_filepath_option = click.option(
-    '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
-)
 
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.option('--fov-id', type=str, help='The ID of the FOV')
 @click.option('--embryo-id', type=str, help='The ID of the Embryo')
-@checkpoint_filepath_option
-@channels_type_option
+@click.option(
+    '--channels-type',
+    type=str,
+    help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
+)
+@click.option(
+    '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
+)
 @click.command()
 def view_embryo_classification(
     data_dirpath, dataset_id, fov_id, embryo_id, channels_type, checkpoint_filepath
@@ -41,16 +38,6 @@ def view_embryo_classification(
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    index_to_label = {
-        0: "proliferation",
-        1: "bean",
-        2: "comma",
-        3: "fold",
-        4: "hatch",
-        5: "death",
-        # 6: "unfertilized",
-    }
-
     device_name = "mps"
     zarr_group_name = "dynamic_features"
 
@@ -59,13 +46,14 @@ def view_embryo_classification(
 
     trained_model = SulstonNet.load_from_checkpoint(
         checkpoint_filepath,
-        in_channels=len(channel_names),
-        n_classes=len(index_to_label),
-        index_to_label=index_to_label,
+        n_input_channels=len(channel_names),
+        n_classes=len(constants.EMBRYO_STAGE_LABELS),
+        index_to_label=constants.EMBRYO_STAGE_INDEX_TO_LABEL,
     )
 
     # Make sure the model is in eval mode for inference
     trained_model.eval()
+    device = torch.device(device_name)
 
     embryo_filepath = (
         data_dirpath
@@ -74,8 +62,6 @@ def view_embryo_classification(
         / f'fov{fov_id}'
         / f'embryo-{embryo_id}.zarr'
     )
-
-    device = torch.device(device_name)
 
     channel_images = []
     for channel_name in channel_names:
@@ -111,7 +97,9 @@ def view_embryo_classification(
 
     def text_overlay():
         frame_ind = viewer.dims.current_step[0]
-        viewer.text_overlay.text = f"prediction:{index_to_label[predictions[frame_ind]]}"
+        viewer.text_overlay.text = (
+            f"prediction:{constants.EMBRYO_STAGE_INDEX_TO_LABEL[predictions[frame_ind]]}"
+        )
 
     # Connect the update function to the slider
     viewer.dims.events.current_step.connect(text_overlay)

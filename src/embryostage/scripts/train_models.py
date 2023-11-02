@@ -72,7 +72,7 @@ def train_models(data_dirpath, logs_dirpath, dataset_ids):
         embryo_data_module.setup()
 
         model = SulstonNet(
-            in_channels=len(channel_names),
+            n_input_channels=len(channel_names),
             n_classes=embryo_data_module.dataset.n_classes,
             index_to_label=embryo_data_module.dataset.index_to_label,
         )

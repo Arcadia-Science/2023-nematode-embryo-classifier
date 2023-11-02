@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.data._utils.collate import default_collate
 from tqdm import tqdm
 
+from embryostage.models import constants
+
 
 class EmbryoDataset(Dataset):
     def __init__(
@@ -43,23 +45,25 @@ class EmbryoDataset(Dataset):
                 self.labels_df["dataset_id"].astype(str).isin(dataset_ids)
             ]
 
-        # Number of classes.
-        self.n_classes = len(self.labels_df["stage"].unique())
-
-        self.label_to_index = {
-            label: index for index, label in enumerate(self.labels_df["stage"].unique())
+        # the map from index to label (without labels that do not exist in the annotations)
+        extant_labels = self.labels_df["stage"].unique()
+        self.index_to_label = {
+            index: label
+            for index, label in constants.EMBRYO_STAGE_INDEX_TO_LABEL.items()
+            if label in extant_labels
         }
+
+        self.label_to_index = {label: index for index, label in self.index_to_label.items()}
+
+        self.n_classes = len(self.index_to_label)
 
         self.label_to_code = {
+            # CrossEntropyLoss expects logits.
             label: torch.nn.functional.one_hot(
                 torch.tensor(index, dtype=torch.long), self.n_classes
-            ).to(
-                torch.float32
-            )  # CrossEntropyLoss expects logits.
+            ).to(torch.float32)
             for label, index in self.label_to_index.items()
         }
-
-        self.index_to_label = dict(enumerate(self.labels_df["stage"].unique()))
 
     def resize_tensor(self, input_tensor, size):
         input_tensor = input_tensor.unsqueeze(0)  # Add a batch dimension
