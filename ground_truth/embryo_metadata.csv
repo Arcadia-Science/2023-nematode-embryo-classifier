@@ -3,6 +3,6 @@ dataset_id,species,strain,perturbation,xy_sampling_um,t_sampling_sec,embryo_leng
 230817,celegans,N2,heatshock,0.22,300,65,32.5
 231004,celegans,N2,DIC,0.16,300,65,32.5
 231011,celegans,N2,control_0.5M_1MNacl,0.33,300,80,40
-231012,otipulae,CEW1,control,0.33,300,65,32.5
-231013,cportoensis,EG4788,control,0.33,300,65,32.5
-231031,celegans,DQM327,control_0.5M_0.75MNaCl,0.33,300,65,32.5
+231012,otipulae,CEW1,control,0.33,300,55,30
+231013,cportoensis,EG4788,control,0.33,300,80,40
+231031,celegans,DQM327,control_0.5M_0.75MNaCl,0.33,300,65,35
