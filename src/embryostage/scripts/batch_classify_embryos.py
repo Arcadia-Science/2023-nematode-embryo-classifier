@@ -19,27 +19,35 @@ from embryostage.models.classification import SulstonNet
 @click.option(
     '--channels-type',
     type=str,
-    help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
+    help="The type of channel(s) used to train the model ('dynamic' or 'raw')",
 )
 @click.option(
     '--checkpoint-filepath',
     type=Path,
     help='The path to the model checkpoint (.ckpt) file',
 )
+@click.option(
+    '--device-name',
+    type=str,
+    default='cpu',
+    help='The device on which to run inference ("cpu", "cuda", or "mps")',
+)
 @click.command()
-def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath):
+def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_name):
     '''
     predict the classification for all embryos in a dataset
     '''
 
     if channels_type == "dynamic":
         channel_names = ["moving_mean", "moving_std"]
-    elif channels_type == "raw-only":
+    elif channels_type == "raw":
         channel_names = ["raw"]
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    device_name = "mps"
+    # the name of the zarr group containing the encoded dynamics
+    # note: this group includes a copy of the raw images,
+    # so the group name does not depend on `channels_type`
     zarr_group_name = "dynamic_features"
 
     # the x-y size of the cropped embryos

@@ -23,7 +23,21 @@ from embryostage.models.classification import SulstonNet
     '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
 )
 @click.command()
-def main(data_dirpath, dataset_id, fov_id, embryo_id, channels_type, checkpoint_filepath):
+@click.option(
+    '--device-name',
+    type=str,
+    default='cpu',
+    help='The device on which to run inference ("cpu", "cuda", or "mps")',
+)
+def main(
+    data_dirpath,
+    dataset_id,
+    fov_id,
+    embryo_id,
+    channels_type,
+    checkpoint_filepath,
+    device_name,
+):
     '''
     interactively view the predicted classification
     for each frame of an embryo timelapse in napari
@@ -36,7 +50,6 @@ def main(data_dirpath, dataset_id, fov_id, embryo_id, channels_type, checkpoint_
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    device_name = "mps"
     zarr_group_name = "dynamic_features"
 
     # the x-y size of the cropped embryos
