@@ -70,3 +70,56 @@ dataset_id,fov_id,old_embryo_id,new_embryo_id,stage_1,t_start_1,t_end_1,stage_2,
 231011,86,0,1545-0581,fold,2,75,death,76,189,,,,,,,,,,
 231011,94,0,0868-2080,fold,2,65,death,66,189,,,,,,,,,,
 231011,145,0,1163-0415,proliferation,2,49,death,50,189,,,,,,,,,,
+231031,196,,2066-1139,proliferation,2,40,death,31,189,,,,,,,,,,0.75M NaCl
+231031,196,,1336-0302,proliferation,2,27,death,28,189,,,,,,,,,,0.75M NaCl
+231031,196,,0971-0169,proliferation,2,36,death,37,189,,,,,,,,,,0.75M NaCl
+231031,196,,0399-0276,death,2,189,,,,,,,,,,,,,0.75M NaCl (embryo exploded from beginning)
+231031,195,,0119-1875,fold,2,35,death,35,189,,,,,,,,,,0.75M NaCl
+231031,194,,1837-1232,proliferation,2,17,death,28,189,,,,,,,,,,0.75M NaCl
+231031,193,,1045-1421,proliferation,2,37,death,38,189,,,,,,,,,,0.75M NaCl
+231031,192,,2195-0949,unfertilized,2,189,,,,,,,,,,,,,0.75M NaCl
+231031,192,,1810-2197,unfertilized,2,189,,,,,,,,,,,,,0.75M NaCl
+231031,192,,1579-1569,unfertilized,2,189,,,,,,,,,,,,,0.75M NaCl
+231031,188,,1953-0808,fold,2,20,death,21,189,,,,,,,,,,0.75M NaCl
+231031,188,,1926-1515,proliferation,2,39,death,40,189,,,,,,,,,,0.75M NaCl
+231031,188,,1733-0560,proliferation,2,12,bean,13,31,comma,32,33,fold,34,181,death,182,189,0.75M NaCl
+231031,188,,1212-0808,fold,2,19,death,20,189,,,,,,,,,,0.75M NaCl
+231031,186,,1674-2198,death,2,189,,,,,,,,,,,,,0.75M NaCl
+231031,186,,0140-1550,proliferation,2,24,bean,25,47,comma,48,50,fold,51,88,death,89,189,0.75M NaCl
+231031,184,,1766-0679,proliferation,2,49,death,50,189,,,,,,,,,,0.75M NaCl
+231031,184,,1062-1498,proliferation,2,3,bean,4,70,death,71,189,,,,,,,0.75M NaCl
+231031,181,,0978-0686,bean,2,65,comma,66,73,death,74,189,,,,,,,0.75M NaCl
+231031,181,,1780-1597,proliferation,2,31,bean,32,78,death,79,189,,,,,,,
+231031,177,,0888-1054,proliferation,2,9,bean,10,62,death,63,189,,,,,,,
+231031,177,,0654-1304,proliferation,2,52,death,53,189,,,,,,,,,,
+231031,176,,0716-1930,proliferation,2,8,bean,9,60,death,61,189,,,,,,,
+231012,1,,1151-2036,bean,2,28,comma,29,31,fold,32,189,,,,,,,
+231012,2,,0268-1665,proliferation,2,4,bean,5,24,comma,25,26,fold,27,189,,,,
+231012,3,,0598-1650,proliferation,2,50,bean,51,64,comma,65,66,fold,67,189,,,,
+231012,8,,2088-0169,proliferation,2,12,bean,13,38,comma,39,40,fold,41,189,,,,
+231012,8,,0616-0754,fold,2,119,hatch,120,189,,,,,,,,,,
+231012,8,,0784-0357,death,2,189,,,,,,,,,,,,,
+231012,9,,2218-0789,death,2,189,,,,,,,,,,,,,
+231012,11,,2161-0884,proliferation,2,10,bean,11,37,comma,38,40,fold,41,189,,,,
+231012,11,,1843-0925,death,2,189,,,,,,,,,,,,,
+231012,12,,1135-0142,proliferation,2,75,bean,76,97,comma,98,100,fold,101,189,,,,
+231012,13,,1870-1984,proliferation,2,82,bean,83,109,comma,110,112,fold,113,189,,,,
+231012,17,,1090-1678,proliferation,2,64,bean,65,97,comma,98,100,fold,101,189,,,,
+231012,17,,0776-1273,proliferation,2,98,bean,97,120,comma,121,122,fold,123,189,,,,
+231012,18,,1386-1967,comma,2,6,fold,7,189,,,,,,,,,,
+231012,19,,0507-0478,proliferation,2,94,bean,95,118,comma,119,121,fold,122,189,,,,
+231013,2,,0241-0714,proliferation,2,68,bean,69,90,comma,91,92,170,hatch,171,189,,,
+231013,2,,1732-1970,proliferation,2,40,bean,41,68,comma,69,71,fold,72,75,death,76,189,
+231013,3,,1930-2141,proliferation,2,99,bean,100,117,comma,118,119,fold,120,189,,,,
+231013,3,,1909-0280,proliferation,2,26,bean,27,45,comma,46,47,144,hatch,145,189,,,
+231013,5,,0803-0988,proliferation,2,27,bean,28,42,comma,43,44,fold,45,121,hatch,122,189,
+231013,14,,0670-0830,proliferation,2,20,bean,21,38,comma,39,40,fold,41,156,hatch,157,189,
+231013,14,,1372-0359,proliferation,2,24,bean,25,49,comma,40,41,fold,42,136,hatch,137,189,
+231013,26,,1671-1073,proliferation,2,51,bean,52,74,comma,75,76,fold,77,152,hatch,153,189,
+231013,29,,1412-1057,proliferation,2,73,bean,74,93,comma,94,96,fold,97,189,,,,
+231013,29,,0908-0512,proliferation,2,68,bean,69,81,comma,82,84,fold,85,189,,,,
+231013,29,,0598-0677,proliferation,2,38,bean,38,57,comma,58,59,fold,60,140,death,141,189,
+231013,29,,0355-0320,proliferation,2,42,bean,43,60,comma,61,63,fold,64,154,hatch,155,189,slightly out of focus
+231013,30,,1305-1741,proliferation,2,81,bean,82,96,comma,97,98,fold,99,181,hatch,182,189,
+231013,32,,0329-0808,proliferation,2,54,bean,55,72,comma,74,75,fold,76,112,death,113,189,"slightly out of focus, embryo dies in fold"
+231013,35,,0469-1615,bean,2,36,comma,37,38,fold,39,129,hatch,130,189,,,,
