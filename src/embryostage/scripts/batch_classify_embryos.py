@@ -1,3 +1,4 @@
+import json
 import os
 
 from pathlib import Path
@@ -95,30 +96,35 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
             logits = trained_model(input_tensor)
             predicted_label_inds = torch.argmax(logits, axis=1)
 
+        logits = logits.to("cpu").numpy()
         predicted_label_inds = predicted_label_inds.to("cpu").numpy()
+
         predicted_labels = [
             constants.EMBRYO_STAGE_INDEX_TO_LABEL[ind] for ind in predicted_label_inds
         ]
-        all_predicted_labels.append(
-            pd.Series(
-                predicted_labels, name=f"{embryo_filepath.parent.name}_{embryo_filepath.name}"
-            )
-        )
 
-    all_predicted_labels = pd.DataFrame(all_predicted_labels)
+        all_predicted_labels.append(
+            {
+                "logits": logits.tolist(),
+                "labels": predicted_labels,
+                "embryo_filepath": str(embryo_filepath),
+            }
+        )
 
     timestamp = pd.Timestamp.now().strftime("%Y-%m-%d")
 
     # write the predictions to a CSV file in the checkpoint's parent directory
     # (this is a hackish way to associate the predictions with the model that generated them)
-    csv_path = (
+    output_filepath = (
         checkpoint_filepath.parent.parent
-        / f'{timestamp}-predictions--from-{checkpoint_filepath.stem}--for-{dataset_id}.csv'
+        / f'{timestamp}-predictions--from-{checkpoint_filepath.stem}--for-{dataset_id}.json'
     )
 
-    os.makedirs(csv_path.parent, exist_ok=True)
-    all_predicted_labels.to_csv(csv_path, index=False)
-    print(f"Predictions saved to {csv_path}")
+    os.makedirs(output_filepath.parent, exist_ok=True)
+    with open(output_filepath, 'w') as file:
+        json.dump(all_predicted_labels, file)
+
+    print(f"Predictions saved to {output_filepath}")
 
 
 if __name__ == '__main__':
