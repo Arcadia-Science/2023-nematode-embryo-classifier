@@ -45,13 +45,13 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    # the name of the zarr group containing the encoded dynamics
+    # the name of the zarr group containing the encoded dynamics (or 'features')
     # note: this group includes a copy of the raw images,
     # so the group name does not depend on `channels_type`
-    zarr_group_name = "dynamic_features"
+    zarr_group_name = constants.FEATURES_GROUP_NAME
 
     # the x-y size of the cropped embryos
-    image_shape = (224, 224)
+    image_shape = (constants.EMBRYO_CROP_SIZE, constants.EMBRYO_CROP_SIZE)
 
     trained_model = SulstonNet.load_from_checkpoint(
         checkpoint_filepath,

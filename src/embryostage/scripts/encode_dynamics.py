@@ -5,6 +5,7 @@ import zarr
 from tqdm import tqdm
 
 from embryostage.cli import options as cli_options
+from embryostage.models import constants
 from embryostage.preprocess.utils import compute_morphodynamics
 
 
@@ -45,7 +46,7 @@ def main(data_dirpath, dataset_id):
 
             encoded_dynamics_filepath = output_path / fov_id / cropped_embryo_filepath.name
             zarr.save_group(
-                Path(encoded_dynamics_filepath, "dynamic_features"), **feature_dict
+                Path(encoded_dynamics_filepath, constants.FEATURES_GROUP_NAME), **feature_dict
             )
 
 

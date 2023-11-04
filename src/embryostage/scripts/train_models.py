@@ -12,6 +12,8 @@ from embryostage.metadata import get_annotations_filepath
 from embryostage.models.classification import SulstonNet
 from embryostage.models.data import EmbryoDataModule, EmbryoDataset
 
+RANDOM_SEED = 2023
+
 
 @cli_options.data_dirpath_option
 @click.option(
@@ -30,8 +32,7 @@ def main(data_dirpath, logs_dirpath, dataset_ids):
     train models for embryo classification using different combinations of channels
     '''
 
-    random_seed = 2023
-    pl.seed_everything(random_seed)
+    pl.seed_everything(RANDOM_SEED)
 
     channel_combinations = {
         "SulstonNet_raw": ["raw"],

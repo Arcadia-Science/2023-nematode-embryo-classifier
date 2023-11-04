@@ -7,13 +7,21 @@ import torchmetrics
 from torch import nn
 from torchvision import models
 
+from embryostage.models import constants
+
 
 class SulstonNet(pl.LightningModule):
     '''
     The SulstonNet model for embryo classification
     '''
 
-    def __init__(self, n_input_channels=2, n_classes=5, index_to_label=None, xy_size=224):
+    def __init__(
+        self,
+        n_input_channels,
+        n_classes,
+        index_to_label=None,
+        xy_size=constants.EMBRYO_CROP_SIZE,
+    ):
         super(SulstonNet, self).__init__()
         self.n_classes = n_classes
         self.index_to_label = index_to_label

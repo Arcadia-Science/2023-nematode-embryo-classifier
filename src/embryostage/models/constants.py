@@ -1,3 +1,8 @@
+# the x-y size of the embryo crops
+EMBRYO_CROP_SIZE = 224
+
+FEATURES_GROUP_NAME = "dynamic_features"
+
 # the allowed labels for the manual annotations
 EMBRYO_STAGE_LABELS = [
     "proliferation",

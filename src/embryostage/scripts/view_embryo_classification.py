@@ -50,10 +50,10 @@ def main(
     else:
         raise ValueError(f"Invalid channel type '{channels_type}'. Must be 'moving' or 'raw'.")
 
-    zarr_group_name = "dynamic_features"
+    zarr_group_name = constants.FEATURES_GROUP_NAME
 
     # the x-y size of the cropped embryos
-    image_shape = (224, 224)
+    image_shape = (constants.EMBRYO_CROP_SIZE, constants.EMBRYO_CROP_SIZE)
 
     trained_model = SulstonNet.load_from_checkpoint(
         checkpoint_filepath,

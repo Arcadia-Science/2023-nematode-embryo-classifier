@@ -27,12 +27,12 @@ class EmbryoDataset(Dataset):
         self.channel_names = channel_names
 
         # The name of the group in the zarr store that contains the channels.
-        self.channel_group = "dynamic_features"
+        self.channel_group = constants.FEATURES_GROUP_NAME
 
         self.transform = transform
 
         # the x-y size of the cropped embryos
-        self.xy_size = 224
+        self.xy_size = constants.EMBRYO_CROP_SIZE
 
         self.debug = False
 
