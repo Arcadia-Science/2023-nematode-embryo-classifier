@@ -44,6 +44,7 @@ class EmbryoDataset(Dataset):
             self.labels_df = self.labels_df.loc[
                 self.labels_df["dataset_id"].astype(str).isin(dataset_ids)
             ]
+            self.labels_df.reset_index(inplace=True)
 
         # the map from index to label (without labels that do not exist in the annotations)
         extant_labels = self.labels_df["stage"].unique()
