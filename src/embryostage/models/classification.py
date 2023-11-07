@@ -7,18 +7,25 @@ import torchmetrics
 from torch import nn
 from torchvision import models
 
-# Define DataModule
+from embryostage.models import constants
 
 
-# Load pre-trained ResNet
 class SulstonNet(pl.LightningModule):
-    def __init__(self, in_channels=2, n_classes=5, index_to_label=None, xy_size=224):
-        # We will use "morphology" and "dynamics" channels as inputs.
-        # Define a model.
+    '''
+    The SulstonNet model for embryo classification
+    '''
+
+    def __init__(
+        self,
+        n_input_channels,
+        n_classes,
+        index_to_label=None,
+        xy_size=constants.EMBRYO_CROP_SIZE,
+    ):
         super(SulstonNet, self).__init__()
         self.n_classes = n_classes
         self.index_to_label = index_to_label
-        self.in_channels = in_channels
+        self.n_input_channels = n_input_channels
         self.xy_size = xy_size
 
         # Initialize class names.
@@ -40,7 +47,7 @@ class SulstonNet(pl.LightningModule):
         )  # output channels from the first conv layer
 
         self.resnet.conv1 = nn.Conv2d(
-            self.in_channels,
+            self.n_input_channels,
             conv1_out_channels,
             kernel_size=7,
             stride=2,
@@ -54,7 +61,9 @@ class SulstonNet(pl.LightningModule):
         )  # update the last layer to output n_classes
 
         # Example input array
-        self.example_input_array = torch.rand(1, self.in_channels, self.xy_size, self.xy_size)
+        self.example_input_array = torch.rand(
+            1, self.n_input_channels, self.xy_size, self.xy_size
+        )
 
         self.train_acc = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=self.n_classes
@@ -240,8 +249,3 @@ def plot_confusion_matrix(confusion_matrix, index_to_label):
             )
 
     return fig
-
-
-# TODO: Implement a self-supervised contrastive classifier.
-# Idea: images of the same embryo in neighboring frames are a positive pairs.
-# Train the model such that distance between images represents developmental distance.

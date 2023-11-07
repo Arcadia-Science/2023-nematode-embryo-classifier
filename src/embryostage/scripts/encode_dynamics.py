@@ -5,13 +5,14 @@ import zarr
 from tqdm import tqdm
 
 from embryostage.cli import options as cli_options
+from embryostage.models import constants
 from embryostage.preprocess.utils import compute_morphodynamics
 
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.command()
-def encode_dynamics(data_dirpath, dataset_id):
+def main(data_dirpath, dataset_id):
     '''
     Call compute_morphodynamics() on all cropped embryos in a dataset and save the results
     '''
@@ -45,9 +46,9 @@ def encode_dynamics(data_dirpath, dataset_id):
 
             encoded_dynamics_filepath = output_path / fov_id / cropped_embryo_filepath.name
             zarr.save_group(
-                Path(encoded_dynamics_filepath, "dynamic_features"), **feature_dict
+                Path(encoded_dynamics_filepath, constants.FEATURES_GROUP_NAME), **feature_dict
             )
 
 
 if __name__ == '__main__':
-    encode_dynamics()
+    main()

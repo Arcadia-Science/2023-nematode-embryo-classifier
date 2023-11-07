@@ -10,7 +10,7 @@ from tqdm import tqdm
 @click.option("--nd2-path", type=Path, help="Path to nd2 file")
 @click.option("--ome-zarr-path", type=Path, help="Path to output zarr")
 @click.command()
-def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
+def main(nd2_path: str, ome_zarr_path: str) -> None:
     """
     Converts a nd2 file to an ome-zarr file.
 
@@ -60,4 +60,4 @@ def convert_nd2_to_ome_zarr(nd2_path: str, ome_zarr_path: str) -> None:
 
 
 if __name__ == "__main__":
-    convert_nd2_to_ome_zarr()
+    main()

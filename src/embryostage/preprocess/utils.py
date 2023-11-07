@@ -85,7 +85,7 @@ def get_cropped_embryo_filepaths(data_dirpath: Path, dataset_id: str, fov_ids: l
     '''
     get the paths to all embryo timelapses/movies for a given dataset and set of FOVs
     '''
-    movie_paths = []
+    all_embryo_zarr_paths = []
     for fov_id in fov_ids:
         embryo_zarr_paths = list(
             (data_dirpath / 'cropped_embryos' / dataset_id / f'fov{fov_id}').glob(
@@ -97,6 +97,6 @@ def get_cropped_embryo_filepaths(data_dirpath: Path, dataset_id: str, fov_ids: l
         if not embryo_zarr_paths:
             print(f"Warning: no embryo movies found for {dataset_id} and FOV {fov_id}.")
 
-        movie_paths += embryo_zarr_paths
+        all_embryo_zarr_paths += embryo_zarr_paths
 
-    return movie_paths
+    return all_embryo_zarr_paths

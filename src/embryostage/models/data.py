@@ -1,7 +1,6 @@
 import os
 
 from pathlib import Path
-import monai.transforms as transforms
 import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
@@ -12,10 +11,12 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.data._utils.collate import default_collate
 from tqdm import tqdm
 
+from embryostage.models import constants
+
 
 class EmbryoDataset(Dataset):
     def __init__(
-        self, data_dirpath, channel_names, annotations_csv, metadata_csv, transform=None
+        self, data_dirpath, channel_names, annotations_csv, dataset_ids, transform=None
     ):
         self.data_dirpath = Path(data_dirpath)
 
@@ -26,34 +27,43 @@ class EmbryoDataset(Dataset):
         self.channel_names = channel_names
 
         # The name of the group in the zarr store that contains the channels.
-        self.channel_group = "dynamic_features"
+        self.channel_group = constants.FEATURES_GROUP_NAME
+
+        self.transform = transform
+
+        # the x-y size of the cropped embryos
+        self.xy_size = constants.EMBRYO_CROP_SIZE
+
+        self.debug = False
 
         human_annotations = pd.read_csv(annotations_csv)
         self.labels_df = expand_annotations(human_annotations)
 
-        # Number of classes.
-        self.n_classes = len(self.labels_df["stage"].unique())
+        if dataset_ids is not None:
+            dataset_ids = [dataset_id.strip() for dataset_id in dataset_ids.split(",")]
+            self.labels_df = self.labels_df.loc[
+                self.labels_df["dataset_id"].astype(str).isin(dataset_ids)
+            ]
 
-        self.label_to_index = {
-            label: index for index, label in enumerate(self.labels_df["stage"].unique())
+        # the map from index to label (without labels that do not exist in the annotations)
+        extant_labels = self.labels_df["stage"].unique()
+        self.index_to_label = {
+            index: label
+            for index, label in constants.EMBRYO_STAGE_INDEX_TO_LABEL.items()
+            if label in extant_labels
         }
+
+        self.label_to_index = {label: index for index, label in self.index_to_label.items()}
+
+        self.n_classes = len(self.index_to_label)
 
         self.label_to_code = {
+            # CrossEntropyLoss expects logits.
             label: torch.nn.functional.one_hot(
                 torch.tensor(index, dtype=torch.long), self.n_classes
-            ).to(
-                torch.float32
-            )  # CrossEntropyLoss expects logits.
+            ).to(torch.float32)
             for label, index in self.label_to_index.items()
         }
-
-        self.index_to_label = dict(enumerate(self.labels_df["stage"].unique()))
-
-        self.transform = transform
-
-        self.XY_SIZE = 224
-
-        self.DEBUG = False
 
     def resize_tensor(self, input_tensor, size):
         input_tensor = input_tensor.unsqueeze(0)  # Add a batch dimension
@@ -80,7 +90,7 @@ class EmbryoDataset(Dataset):
                 raise FileNotFoundError(f"No such file or directory: '{channel_path}'")
 
         images = torch.tensor(np.stack(images, axis=0))
-        images = self.resize_tensor(images, (self.XY_SIZE, self.XY_SIZE))
+        images = self.resize_tensor(images, (self.xy_size, self.xy_size))
 
         # One-hot encode the label and return.
         stage = self.labels_df.loc[idx]["stage"]
@@ -92,7 +102,7 @@ class EmbryoDataset(Dataset):
         index_dict = self.labels_df.loc[idx].to_dict()
 
         # The last tuple helps with debugging and ignored by training loop.
-        return (images, label, index_dict) if self.DEBUG else (images, label)
+        return (images, label, index_dict) if self.debug else (images, label)
 
     def load_frames_into_memory(self):
         data = []
@@ -108,7 +118,7 @@ class EmbryoDataset(Dataset):
             image_path = self.data_dirpath / zarr_path
             zarr_store = zarr.open(image_path, mode="r")
             image = zarr_store[frame].squeeze()
-            if self.transform:
+            if self.transform is not None:
                 image = self.transform(image)
             data.append(image)
 
@@ -120,44 +130,23 @@ class EmbryoDataset(Dataset):
 class EmbryoDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_dirpath,
-        channel_names,
-        annotations_csv,
-        metadata_csv,
+        dataset,
+        transform,
         split=(0.7, 0.15, 0.15),
         batch_size=32,
         balance_classes=True,
-        #  num_workers=4, # current approach doesn't work with multiple workers.
     ):
         super().__init__()
-        self.data_dirpath = data_dirpath
-        self.channel_names = channel_names
-        self.annotations_csv = annotations_csv
-        self.metadata_csv = metadata_csv
+        self.dataset = dataset
+        self.transform = transform
         self.split = split
         self.batch_size = batch_size
         self.balance_classes = balance_classes
-        self.transform = transforms.Compose(
-            [
-                transforms.RandFlip(prob=0.5, spatial_axis=(0, 1)),
-                transforms.RandRotate(range_x=0.5 * np.pi, prob=0.2, padding_mode="border"),
-                transforms.RandZoom(prob=0.2, min_zoom=0.8, max_zoom=1.2, padding_mode="edge"),
-            ]
-        )
 
     def setup(self, stage=None):
         '''
         note: `stage` is a required kwarg for lightning data modules.
         '''
-        # Dataset with all annotated data.
-        self.dataset = EmbryoDataset(
-            self.data_dirpath,
-            self.channel_names,
-            self.annotations_csv,
-            self.metadata_csv,
-            transform=self.transform,
-        )
-
         # Split the dataset into train, val, test sets.
         train_size = int(self.split[0] * len(self.dataset))
         val_size = int(self.split[1] * len(self.dataset))
