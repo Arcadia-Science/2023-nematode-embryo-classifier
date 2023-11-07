@@ -2,11 +2,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import medfilt
+from scipy import stats as st
 import numpy as np
 import os
 
+MEDFILT_KERNEL = 7 # median filter kernel size
+
 # encoding embryo states as integers
 STATE_CODES = {
+    'unfertilized': -1,
     'proliferation': 0,
     'bean': 1,
     'comma': 2,
@@ -16,56 +20,77 @@ STATE_CODES = {
 }
 STATE_CODES_INV = {v: k for k, v in STATE_CODES.items()} # inverse
 
-def fix_states(states: list):
+def fix_states(states: list[str]) -> [list[str], 
+                                      str, 
+                                      dict]:
     """
+
+    #TODO: add unfertilized logic (if unfert -> other states cannot be anything else)
+
     Use time information to correct embryo state predictions. Specific rules are:
         - Median filter to remove sporadic state transitions
-        - Eliminate fold->death transitions
+        - Eliminate fold->death transitions for embryops that have hatched
         - Embryo states cannot go backwards in development
     
-    Inputs: 
-        states: list[str] or list[list[str]]
-            list of embryo states in chronological order (or list of lists for multiple embryos)
-    
-    Outptuts:
-        states_out: list[list[str]]
-            list of corrected embryo states
-    """
-    if type(states[0]) == str:
-        # single embryo, convert to list
-        states = [states]
-    
-    states_out = []
-    for state in states:
-        # convert states to numerical values
-        states_numeric = [STATE_CODES[s] for s in state]
-        
-        # median filter
-        states_numeric = medfilt(states_numeric, kernel_size=7)
+    Saves embryo progression plots
 
-        # eliminate fold->death transitions
+    Inputs: 
+        states: list[str]
+            list of embryo states in chronological order
+    
+    Returns:
+        states_out: list[str]
+            list of fixed embryo states
+        final_state: str
+            final state of embryo
+        state_durations: dict
+            dictionary of each state and its duration in frames
+        
+    """
+
+    states_out = []
+
+    # convert states to numerical values
+    states_numeric = [STATE_CODES[s] for s in states]
+    
+    # median filter
+    states_numeric = medfilt(states_numeric, kernel_size=MEDFILT_KERNEL)
+
+
+    # final state
+    final_state_numeric = st.mode(states_numeric[-1*MEDFILT_KERNEL:]).mode
+    final_state = STATE_CODES_INV[final_state_numeric]
+    # eliminate fold->death transitions if the embryo has hatched
+    if final_state == 'hatch':
         for i in range(len(states_numeric)-1):
             if states_numeric[i] == 3 and states_numeric[i+1] == 5:
                 states_numeric[i+1] = 3
 
-        # embryo states cannot go backwards in development
-        for i in range(len(states_numeric)-1):
-            if states_numeric[i+1] < states_numeric[i]:
-                states_numeric[i+1] = states_numeric[i]
+    # embryo states cannot go backwards in development
+    for i in range(len(states_numeric)-1):
+        if states_numeric[i+1] < states_numeric[i]:
+            states_numeric[i+1] = states_numeric[i]
 
 
-        
-        # find any remaining transitions of magnitude > 1
-        transitions = np.abs(np.diff(states_numeric))
-        if any(transitions > 1):
-            pass
-            # print('Warning: Impossible transition detected')
-        
-        # convert numeric states back to strings
-        states_out.append([STATE_CODES_INV[s] for s in states_numeric])
-        # print(states_out)
+    # find any remaining transitions of magnitude > 1
+    transitions = np.abs(np.diff(states_numeric))
+    if any(transitions > 1):
+        pass
+        # print('Warning: Impossible transition detected')
     
-    return states_out
+    # convert numeric states back to strings
+    states_out = [STATE_CODES_INV[s] for s in states_numeric]
+    
+
+    # summary dict of each state and its duration
+    state_durations = {}
+    for s in states_out:
+        if s in state_durations:
+            state_durations[s] += 1
+        else:
+            state_durations[s] = 1
+    
+    return states_out, final_state, state_durations
 
 def visualize_progression(states: list, ax = None):
     """
@@ -130,8 +155,9 @@ if __name__ == '__main__':
         f,axs = plt.subplots(int(np.floor(len(embryos_to_plot)/2)),2,figsize=(14,20))
         axs = axs.ravel()
         for i,e in enumerate(embryos_to_plot):
-            sample_embryo = data[[e]].T.values.tolist()
-            visualize_progression([sample_embryo[0], fix_states(sample_embryo)[0]], axs[i])
-            axs[i].set_title('Embryo ' + str(i))
+            sample_embryo = data[[e]].T.values.tolist()[0]
+            fixed_embryo, final_state, _ = fix_states(sample_embryo)
+            visualize_progression([sample_embryo, fixed_embryo], axs[i])
+            axs[i].set_title('Embryo ' + str(i) + ' (final state: ' + final_state + ')')
         plt.tight_layout()
         plt.savefig('plots/embryo-batch-' + str(b) + '.png')
