@@ -15,6 +15,18 @@ from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
 
 
+def parse_ids_from_embryo_filepath(embryo_filepath):
+    '''
+    parse the dataset ID, FOV ID, and embryo ID from an embryo filepath of the form
+    /some/path/<dataset_id>/fov<fov_id>/embryo-<embryo_id>.zarr
+    '''
+    embryo_filepath = Path(embryo_filepath)
+    dataset_id = embryo_filepath.parent.parent.name
+    fov_id = embryo_filepath.parent.name.replace('fov', '')
+    embryo_id = embryo_filepath.stem.replace('embryo-', '')
+    return {'dataset_id': dataset_id, 'fov_id': fov_id, 'embryo_id': embryo_id}
+
+
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.option(
@@ -108,6 +120,7 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
                 "logits": logits.tolist(),
                 "labels": predicted_labels,
                 "embryo_filepath": str(embryo_filepath),
+                **parse_ids_from_embryo_filepath(embryo_filepath),
             }
         )
 
@@ -117,7 +130,7 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
     # (this is a hackish way to associate the predictions with the model that generated them)
     output_filepath = (
         checkpoint_filepath.parent.parent
-        / f'{timestamp}-predictions--from-{checkpoint_filepath.stem}--for-{dataset_id}.json'
+        / f'{timestamp}-preds-for-{dataset_id}--from-{checkpoint_filepath.stem}.json'
     )
 
     os.makedirs(output_filepath.parent, exist_ok=True)
