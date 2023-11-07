@@ -317,18 +317,8 @@ def expand_annotations(annotations: pd.DataFrame) -> pd.DataFrame:
     # Find columns with annotations of end times.
     t_end_cols = [col for col in annotations.columns if col.startswith("t_end")]
 
-    expanded_annotations = pd.DataFrame(
-        columns=[
-            "dataset_id",
-            "fov_id",
-            "embryo_id",
-            "frame",
-            "stage",
-            "zarr_path",
-        ]
-    )
-
     pbar = tqdm(total=len(annotations))
+    expanded_annotations_rows = []
     for idx, row in annotations.iterrows():
         zarr_path = f"{row.dataset_id}/fov{row.fov_id}/embryo-{row.new_embryo_id}.zarr"
 
@@ -346,23 +336,15 @@ def expand_annotations(annotations: pd.DataFrame) -> pd.DataFrame:
                 t_end = int(t_end)
                 # Write a row for each annotated frame of the movie.
                 for frame in range(t_start, t_end + 1):
-                    expanded_annotations = pd.concat(
-                        [
-                            expanded_annotations,
-                            pd.DataFrame(
-                                [
-                                    {
-                                        "dataset_id": row.dataset_id,
-                                        "fov_id": row.fov_id,
-                                        "embryo_id": row.new_embryo_id,
-                                        "frame": frame,
-                                        "stage": current_stage,
-                                        "zarr_path": zarr_path,
-                                    }
-                                ]
-                            ),
-                        ],
-                        ignore_index=True,
+                    expanded_annotations_rows.append(
+                        {
+                            "dataset_id": row.dataset_id,
+                            "fov_id": row.fov_id,
+                            "embryo_id": row.new_embryo_id,
+                            "frame": frame,
+                            "stage": current_stage,
+                            "zarr_path": zarr_path,
+                        }
                     )
 
-    return expanded_annotations
+    return pd.DataFrame(expanded_annotations_rows)
