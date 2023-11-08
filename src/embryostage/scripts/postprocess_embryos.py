@@ -18,6 +18,7 @@ STATE_CODES = {
     'hatch': 4,
     'death' : 5
 }
+
 STATE_CODES_INV = {v: k for k, v in STATE_CODES.items()} # inverse
 
 def fix_states(states: list[str]) -> [list[str], 
@@ -25,11 +26,9 @@ def fix_states(states: list[str]) -> [list[str],
                                       dict]:
     """
 
-    #TODO: add unfertilized logic (if unfert -> other states cannot be anything else)
-
     Use time information to correct embryo state predictions. Specific rules are:
         - Median filter to remove sporadic state transitions
-        - Eliminate fold->death transitions for embryops that have hatched
+        - If embryo has hatched or finished in fold state, remove death transitions
         - Embryo states cannot go backwards in development
     
     Saves embryo progression plots
@@ -41,8 +40,8 @@ def fix_states(states: list[str]) -> [list[str],
     Returns:
         states_out: list[str]
             list of fixed embryo states
-        final_state: str
-            final state of embryo
+        final_state_postfilt: str
+            final state of embryo after filtering
         state_durations: dict
             dictionary of each state and its duration in frames
         
@@ -57,15 +56,22 @@ def fix_states(states: list[str]) -> [list[str],
     states_numeric = medfilt(states_numeric, kernel_size=MEDFILT_KERNEL)
 
 
-    # final state
-    final_state_numeric = st.mode(states_numeric[-1*MEDFILT_KERNEL:]).mode
-    final_state = STATE_CODES_INV[final_state_numeric]
-    # eliminate fold->death transitions if the embryo has hatched
-    if final_state == 'hatch':
+    # final state (pre filtering)
+    final_state_prefilt_numeric = st.mode(states_numeric[-1*MEDFILT_KERNEL:]).mode
+    final_state_prefilt = STATE_CODES_INV[final_state_prefilt_numeric]
+
+    # eliminate death transitions if the embryo has hatched or finished in fold state
+    if final_state_prefilt in ['hatch', 'fold']:
+        '''
         for i in range(len(states_numeric)-1):
             if states_numeric[i] == 3 and states_numeric[i+1] == 5:
                 states_numeric[i+1] = 3
-
+        '''
+        # go backwards in time and fix death states
+        for i in range(len(states_numeric)-1, 0, -1):
+            if states_numeric[i] == STATE_CODES['death']:
+                states_numeric[i] = states_numeric[i+1]
+    
     # embryo states cannot go backwards in development
     for i in range(len(states_numeric)-1):
         if states_numeric[i+1] < states_numeric[i]:
@@ -90,7 +96,11 @@ def fix_states(states: list[str]) -> [list[str],
         else:
             state_durations[s] = 1
     
-    return states_out, final_state, state_durations
+    # final state (post filtering)
+    final_state_postfilt_numeric = st.mode(states_numeric[-1*MEDFILT_KERNEL:]).mode
+    final_state_postfilt = STATE_CODES_INV[final_state_postfilt_numeric]
+
+    return states_out, final_state_postfilt, state_durations
 
 def visualize_progression(states: list, ax = None):
     """
@@ -132,32 +142,37 @@ if __name__ == '__main__':
     '''
     demo script of postprocessing step
 
-    1. load csv of embryo states
-    for every embryo:
-        2. fix states
-        3. visualize embryo (blue: raw, orange: fixed)
-        4. save figure
-    
     '''
     # load csv of embryo states
-    data = pd.read_csv('/Users/ilya_arcadia/Code/lolscripts/data/sample-embryo-classification.csv').T
+    # data = pd.read_csv('/Users/ilya_arcadia/Code/lolscripts/data/sample-embryo-classification.csv').T
     
+    data_json = pd.read_json('/Users/ilya_arcadia/Code/lolscripts/data/preds_encoded-dynamics.json')
 
     batch_size = 20 # number of embryos to plot per batch
-    n_embryos = data.shape[1]
+    n_embryos = data_json.shape[0]
     num_batches = int(np.floor(n_embryos/batch_size))
 
     if not os.path.exists('plots'):
         os.makedirs('plots')
     
-    for b in range(num_batches):
-        embryos_to_plot = np.arange(b*batch_size, b*batch_size + batch_size)
+    denoised_labels = []
+    embryo_end_states = []
+    for b in np.arange(num_batches+1):
+        embryos_to_plot = np.arange(b*batch_size, min(n_embryos, batch_size * (b+1)))
         f,axs = plt.subplots(int(np.floor(len(embryos_to_plot)/2)),2,figsize=(14,20))
         axs = axs.ravel()
         for i,e in enumerate(embryos_to_plot):
-            sample_embryo = data[[e]].T.values.tolist()[0]
+            data_embryo = data_json.loc[e]
+            sample_embryo = data_embryo.labels # data_json[[e]].T.values.tolist()[0]
             fixed_embryo, final_state, _ = fix_states(sample_embryo)
+            denoised_labels.append(fixed_embryo)
+            embryo_end_states.append(final_state)
             visualize_progression([sample_embryo, fixed_embryo], axs[i])
-            axs[i].set_title('Embryo ' + str(i) + ' (final state: ' + final_state + ')')
+            axs[i].set_title('d_id: {} | fov_id: {} | e_id: {} | c: {}'.format(*data_embryo[['dataset_id', 'fov_id', 'embryo_id', 'condition']].values) +  ' (final: ' + final_state + ')')
         plt.tight_layout()
         plt.savefig('plots/embryo-batch-' + str(b) + '.png')
+        plt.close()
+
+    data_json['denoised_labels'] = denoised_labels
+    data_json['embryo_end_states'] = embryo_end_states
+    data_json.to_json('embryos_postprocessed.json')
