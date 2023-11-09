@@ -23,7 +23,7 @@ class EmbryoDataset(Dataset):
         # The length of this list indicates the number of channels
         # from which stage is predicted.
         # The names of channels describe what they represent
-        # (e.g., moving_mean, moving_std, fluorescent_reporter, raw, optical_flow)
+        # (e.g., moving_mean, moving_std, raw)
         self.channel_names = channel_names
 
         # The name of the group in the zarr store that contains the channels.

@@ -72,7 +72,7 @@ Explore the annotations as interpreted by the current code path using [`explore_
 
 
 ## Step 4: Compute features
-Use the `encode-dynamics` command to encode the temporal dynamics (moving average, moving standard deviation, and optical flow) as channels. This script writes its output to the `encoded_dynamics` subdirectory of the `data_dirpath` directory. It has the same CLI options as the previous scripts. It points to [this script](../src/embryostage/scripts/encode_dynamics.py) For example:
+Use the `encode-dynamics` command to encode the temporal dynamics (moving average and moving standard deviation) as channels. This script writes its output to the `encoded_dynamics` subdirectory of the `data_dirpath` directory. It has the same CLI options as the previous scripts. It points to [this script](../src/embryostage/scripts/encode_dynamics.py) For example:
 ```sh
 encode-dynamics --data-dirpath /path/to/processed-data/ --dataset-id 230719
 ```
