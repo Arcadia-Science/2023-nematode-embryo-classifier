@@ -80,8 +80,9 @@ def main(predictions_filepath, annotations_filepath):
     # sanity check that the annotations are unique
     counts = annotations.groupby(['dataset_id', 'fov_id', 'embryo_id', 'frame_ind']).count()
     if not counts.loc[counts.annotated_label > 1].empty:
+        ids = counts.loc[counts.annotated_label > 1].index.tolist()
         raise ValueError(
-            'The annotations contain multiple labels for the same frame. '
+            f'The annotations for embryos {ids} multiple labels for the same frame. '
             'Check that the annotations are unique.'
         )
 
