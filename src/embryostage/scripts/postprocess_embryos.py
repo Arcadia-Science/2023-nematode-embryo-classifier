@@ -5,6 +5,7 @@ from scipy.signal import medfilt
 from scipy import stats as st
 import numpy as np
 import os
+import argparse
 
 MEDFILT_KERNEL = 7 # median filter kernel size
 
@@ -143,36 +144,51 @@ if __name__ == '__main__':
     demo script of postprocessing step
 
     '''
-    # load csv of embryo states
-    # data = pd.read_csv('/Users/ilya_arcadia/Code/lolscripts/data/sample-embryo-classification.csv').T
-    
-    data_json = pd.read_json('/Users/ilya_arcadia/Code/lolscripts/data/preds_encoded-dynamics.json')
+    # parse command line arguments
+    parser = argparse.ArgumentParser(description='Postprocess embryo states')
+    parser.add_argument('--data_json', type=str, help='path to json file containing embryo states') # 
+    args = parser.parse_args()
 
+    # parse filename from path
+    filename = os.path.basename(args.data_json).split('.')[0]
+
+    data_json = pd.read_json(args.data_json)
+
+    # if condition not specified, 
+    if 'condition' not in data_json.columns:
+        data_json['condition'] = 'control' + filename
+    
     batch_size = 20 # number of embryos to plot per batch
     n_embryos = data_json.shape[0]
     num_batches = int(np.floor(n_embryos/batch_size))
 
-    if not os.path.exists('plots'):
-        os.makedirs('plots')
+    plots_dir = os.path.join('post', 'plots', 'plots_{}'.format(filename))
+    if not os.path.exists(plots_dir):
+        os.makedirs(plots_dir)
     
     denoised_labels = []
     embryo_end_states = []
     for b in np.arange(num_batches+1):
         embryos_to_plot = np.arange(b*batch_size, min(n_embryos, batch_size * (b+1)))
-        f,axs = plt.subplots(int(np.floor(len(embryos_to_plot)/2)),2,figsize=(14,20))
+        f,axs = plt.subplots(int(np.ceil(len(embryos_to_plot)/2)),2,figsize=(14,20))
         axs = axs.ravel()
+        print(embryos_to_plot)
         for i,e in enumerate(embryos_to_plot):
             data_embryo = data_json.loc[e]
-            sample_embryo = data_embryo.labels # data_json[[e]].T.values.tolist()[0]
+            sample_embryo = data_embryo.labels
             fixed_embryo, final_state, _ = fix_states(sample_embryo)
             denoised_labels.append(fixed_embryo)
             embryo_end_states.append(final_state)
             visualize_progression([sample_embryo, fixed_embryo], axs[i])
             axs[i].set_title('d_id: {} | fov_id: {} | e_id: {} | c: {}'.format(*data_embryo[['dataset_id', 'fov_id', 'embryo_id', 'condition']].values) +  ' (final: ' + final_state + ')')
         plt.tight_layout()
-        plt.savefig('plots/embryo-batch-' + str(b) + '.png')
+        plt.savefig(os.path.join(plots_dir, 'embryo-batch-' + str(b) + '.png'))
         plt.close()
 
     data_json['denoised_labels'] = denoised_labels
     data_json['embryo_end_states'] = embryo_end_states
-    data_json.to_json('embryos_postprocessed.json')
+
+    out_dir = os.path.join('post', 'out_json')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    data_json.to_json(os.path.join(out_dir, filename + '-fixed.json'))
