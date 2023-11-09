@@ -78,6 +78,11 @@ def main(
                 'embryo*.zarr'
             )
         )
+        if not embryo_filepaths:
+            raise FileNotFoundError(
+                f"No encoded dynamics data found for dataset '{dataset_id}' and FOV '{fov_id}'"
+            )
+
         if int(embryo_id) >= len(embryo_filepaths):
             raise ValueError(
                 f"Invalid embryo index '{embryo_id}'. "

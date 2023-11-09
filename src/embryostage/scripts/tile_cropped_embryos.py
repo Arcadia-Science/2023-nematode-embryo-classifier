@@ -24,7 +24,7 @@ def tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
 
     size_t, size_x, size_y = im_subsampled.shape
 
-    # zero-pad the image in the x and y directions to create a back border between the frames
+    # zero-pad the image in the x and y directions to create a black border between the frames
     # after they are concatenated
     im_padded = np.zeros((size_t, size_x + 2, size_y + 2))
     im_padded[:, 1:-1, 1:-1] = im_subsampled
