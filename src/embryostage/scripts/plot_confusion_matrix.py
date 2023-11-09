@@ -22,11 +22,12 @@ def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     )
 
     # normalize the confusion matrix by row
-    # (each row corresponds to a true label, so this show the distribution of predicted labels
-    # for each true label)
+    # (this means that each row will correspond to the distribution
+    # of predicted labels for each true label)
     confusion_matrix = confusion_matrix.astype('float') / confusion_matrix.sum(axis=1)[:, None]
 
-    # replace NaNs (which occur when a label is not present in the true labels)
+    # hack: replace NaNs with zeros
+    # (which occur when there are no instances of a label in true_labels)
     confusion_matrix[np.isnan(confusion_matrix)] = 0
 
     plt.figure(figsize=(6, 6))
@@ -76,6 +77,14 @@ def main(predictions_filepath, annotations_filepath):
         columns={'frame': 'frame_ind', 'stage': 'annotated_label'}, inplace=True
     )
 
+    # sanity check that the annotations are unique
+    counts = annotations.groupby(['dataset_id', 'fov_id', 'embryo_id', 'frame_ind']).count()
+    if not counts.loc[counts.annotated_label > 1].empty:
+        raise ValueError(
+            'The annotations contain multiple labels for the same frame. '
+            'Check that the annotations are unique.'
+        )
+
     with open(predictions_filepath, 'r') as file:
         data = json.load(file)
 
@@ -94,6 +103,8 @@ def main(predictions_filepath, annotations_filepath):
         labels=['logits', 'labels', 'embryo_filepath'], axis=1, inplace=True, errors='ignore'
     )
 
+    # the columns in both the annotations and the predictions that we will use to merge;
+    # this is the set of columns required to uniquely identify each frame
     merge_columns = ['dataset_id', 'fov_id', 'embryo_id', 'frame_ind']
 
     # coerce the columns we need for the merge
@@ -102,18 +113,18 @@ def main(predictions_filepath, annotations_filepath):
             df[column] = df[column].astype(str)
 
     # merge the predictions and the manual annotations
-    annotations_preds = pd.merge(
+    annotations_preds_merged = pd.merge(
         annotations, preds, on=merge_columns, how='inner', validate='one_to_one'
     )
-    if annotations_preds.empty:
+    if annotations_preds_merged.empty:
         raise ValueError(
             'No predictions found for the given annotations. '
             'Check that the predictions file and annotations file are for the same dataset.'
         )
 
     _plot_confusion_matrix(
-        true_labels=annotations_preds.annotated_label.values,
-        predicted_labels=annotations_preds.predicted_label.values,
+        true_labels=annotations_preds_merged.annotated_label.values,
+        predicted_labels=annotations_preds_merged.predicted_label.values,
         labels=constants.EMBRYO_STAGE_LABELS,
     )
     plt.savefig(
