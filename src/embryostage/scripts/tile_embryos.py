@@ -41,8 +41,15 @@ def normalize_to_uint8(im):
     normalize an array to 0-1 and convert to uint8
     '''
     im = im.astype(np.float32)
-    im -= im.min()
-    im /= im.max()
+
+    min_val, max_val = np.percentile(im.flatten(), (1, 99))
+
+    im -= min_val
+    im /= max_val - min_val
+
+    im[im < 0] = 0
+    im[im > 1] = 1
+
     im *= 255
     im = im.astype(np.uint8)
     return im
