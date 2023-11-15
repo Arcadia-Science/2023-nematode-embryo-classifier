@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_model_summary import summary
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.metadata import get_annotations_filepath
 from embryostage.models import constants
 from embryostage.models.classification import SulstonNet

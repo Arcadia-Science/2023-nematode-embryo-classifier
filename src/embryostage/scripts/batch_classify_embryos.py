@@ -10,7 +10,7 @@ import zarr
 
 from tqdm import tqdm
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
 

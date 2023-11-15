@@ -4,7 +4,7 @@ import numpy as np
 import PIL
 import zarr
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.scripts.batch_classify_embryos import parse_ids_from_embryo_filepath
 
 

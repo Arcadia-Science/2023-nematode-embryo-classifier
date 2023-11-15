@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import zarr
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
 

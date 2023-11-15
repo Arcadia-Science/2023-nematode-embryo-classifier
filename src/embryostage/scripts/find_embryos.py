@@ -1,6 +1,6 @@
 import click
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.metadata import load_dataset_metadata
 from embryostage.preprocess.embryo_finder import EmbryoFinder
 
