@@ -8,7 +8,7 @@ from embryostage.cli import options as cli_options
 from embryostage.scripts.batch_classify_embryos import parse_ids_from_embryo_filepath
 
 
-def tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
+def _tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
     '''
     tile the frames from a cropped embryo timelapse horizontally to form a single 2D image
     of shape (size_x, size_t * size_y)
@@ -22,12 +22,14 @@ def tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
     # subsample to reduce the size of the concatenated image
     im_subsampled = im[::subsample_timepoints_by, ::subsample_xy_by, ::subsample_xy_by]
 
-    size_t, size_x, size_y = im_subsampled.shape
-
     # zero-pad the image in the x and y directions to create a black border between the frames
     # after they are concatenated
-    im_padded = np.zeros((size_t, size_x + 2, size_y + 2))
-    im_padded[:, 1:-1, 1:-1] = im_subsampled
+    pad_width = 1
+    size_t, size_x, size_y = im_subsampled.shape
+    im_padded = np.zeros(
+        (size_t, size_x + 2 * pad_width, size_y + 2 * pad_width), dtype=im.dtype
+    )
+    im_padded[:, pad_width:-pad_width, pad_width:-pad_width] = im_subsampled
 
     # concat the timepoints in the x direction (by column)
     size_t, size_x, size_y = im_padded.shape
@@ -36,26 +38,29 @@ def tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
     return im_tiled
 
 
-def normalize_to_uint8(im):
+def _normalize_to_uint8(array, percentile=99):
     '''
     normalize an array to 0-1 and convert to uint8
+
+    array: the array to normalize
+    percentile: the percentile to use for the max and min values
     '''
-    im = im.astype(np.float32)
+    array = array.astype(np.float32)
 
-    min_val, max_val = np.percentile(im.flatten(), (1, 99))
+    min_val, max_val = np.percentile(array.flatten(), (100 - percentile, percentile))
 
-    im -= min_val
-    im /= max_val - min_val
+    array -= min_val
+    array /= max_val - min_val
 
-    im[im < 0] = 0
-    im[im > 1] = 1
+    array[array < 0] = 0
+    array[array > 1] = 1
 
-    im *= 255
-    im = im.astype(np.uint8)
-    return im
+    array *= 255
+    array = array.astype(np.uint8)
+    return array
 
 
-def rasterize_text(text, font_size, image_size):
+def _rasterize_text(text, font_size, image_size):
     '''
     rasterize a string to an image and return the image as a numpy array
     '''
@@ -101,9 +106,8 @@ def main(
     '''
     tile all cropped embryo timelapses from a given dataset
     by concatenating timelapse frames by column (i.e., horizontally)
-    and then concatenating the resulting images by row (i.e., vertically)
-
-    the resulting image is saved to the data directory as a JPEG file
+    and concatenating the resulting images by row (i.e., vertically),
+    then write the resulting image to the data directory as a JPEG.
     '''
 
     # aggregate the filepaths for all embryos from all FOVs in the dataset
@@ -115,36 +119,38 @@ def main(
             f"No encoded dynamics data found for dataset '{dataset_id}' in {data_dirpath}"
         )
 
-    # sort the embryo_filepaths by FOV ID
+    # sort the embryo_filepaths by fov_id
     embryo_filepaths = sorted(
         embryo_filepaths,
         key=lambda filepath: int(parse_ids_from_embryo_filepath(filepath)['fov_id']),
     )
 
-    tiles = []
+    tiled_embryos = []
     for embryo_filepath in embryo_filepaths[::subsample_embryos_by]:
-        tile = tile_embryo(
+        tiled_embryo = _tile_embryo(
             embryo_filepath,
             subsample_timepoints_by=subsample_timepoints_by,
             subsample_xy_by=subsample_xy_by,
         )
-        tile = normalize_to_uint8(tile)
+        tiled_embryo = _normalize_to_uint8(tiled_embryo)
 
-        # create an image containing the embryo and FOV IDs
+        # create an image containing the embryo ID and FOV ID
+        # and prepend it to the tiled image as a crude label
         ids = parse_ids_from_embryo_filepath(embryo_filepath)
-        id_image = rasterize_text(
+        id_image = _rasterize_text(
             text=f"fov{ids['fov_id']}\n{ids['embryo_id']}",
-            image_size=(tile.shape[0], tile.shape[0]),
+            image_size=(tiled_embryo.shape[0], tiled_embryo.shape[0]),
             font_size=10,
         )
+        tiled_embryo = np.concatenate((id_image, tiled_embryo), axis=1)
 
-        # prepend the image of the IDs to the embryo tile
-        tile = np.concatenate((id_image, tile), axis=1)
+        tiled_embryos.append(tiled_embryo)
 
-        tiles.append(tile)
+    tiled_array = np.concatenate(tuple(tiled_embryos), axis=0)
 
-    im = np.concatenate(tuple(tiles), axis=0)
-    imageio.imsave(data_dirpath / f'{dataset_id}-cropped-embryos-tile.jpg', im)
+    filepath = data_dirpath / f'{dataset_id}-cropped-embryos-tile.jpg'
+    imageio.imsave(filepath, tiled_array)
+    print(f'Tiled array saved to {filepath}')
 
 
 if __name__ == '__main__':

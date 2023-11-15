@@ -22,12 +22,12 @@ def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     )
 
     # normalize the confusion matrix by row
-    # (this means that each row will correspond to the distribution
-    # of predicted labels for each true label)
+    # (so that the rows corresponds to the distribution of predicted labels
+    # for each true label)
     confusion_matrix = confusion_matrix.astype('float') / confusion_matrix.sum(axis=1)[:, None]
 
     # hack: replace NaNs with zeros
-    # (which occur when there are no instances of a label in true_labels)
+    # (these occur when there are no instances of a label in true_labels)
     confusion_matrix[np.isnan(confusion_matrix)] = 0
 
     plt.figure(figsize=(6, 6))
@@ -79,7 +79,7 @@ def main(predictions_filepath, annotations_filepath):
 
     # sanity check that the annotations are unique
     counts = annotations.groupby(['dataset_id', 'fov_id', 'embryo_id', 'frame_ind']).count()
-    if not counts.loc[counts.annotated_label > 1].empty:
+    if any(counts.annotated_label > 1):
         ids = counts.loc[counts.annotated_label > 1].index.tolist()
         raise ValueError(
             f'The annotations for embryos {ids} multiple labels for the same frame. '
@@ -88,7 +88,6 @@ def main(predictions_filepath, annotations_filepath):
 
     with open(predictions_filepath, 'r') as file:
         data = json.load(file)
-
     preds = pd.DataFrame(data)
 
     # add a frame index to the labels
@@ -104,11 +103,11 @@ def main(predictions_filepath, annotations_filepath):
         labels=['logits', 'labels', 'embryo_filepath'], axis=1, inplace=True, errors='ignore'
     )
 
-    # the columns in both the annotations and the predictions that we will use to merge;
-    # this is the set of columns required to uniquely identify each frame
+    # the columns on which to merge the annotations and the predictions
+    # (this is the set of columns that uniquely identify each timelapse frame)
     merge_columns = ['dataset_id', 'fov_id', 'embryo_id', 'frame_ind']
 
-    # coerce the columns we need for the merge
+    # coerce the merge columns to strings
     for df in (annotations, preds):
         for column in merge_columns:
             df[column] = df[column].astype(str)
