@@ -108,6 +108,22 @@ def main(
     by concatenating timelapse frames by column (i.e., horizontally)
     and concatenating the resulting images by row (i.e., vertically),
     then write the resulting image to the data directory as a JPEG.
+
+    Parameters
+    ----------
+    data_dirpath: str
+        The path to the data directory containing the cropped_embryo directory
+    dataset_id: str
+        The ID of the dataset to tile
+    subsample_embryos_by: int
+        The factor by which to subsample the embryos; for example, if a value of 2 is given,
+        then every second embryo will be included in the tiled image
+    subsample_timepoints_by: int
+        The factor by which to subsample timepoints; analogous to subsample_embryos_by,
+        but applied to the frames of each timelapse
+    subsample_xy_by: int
+        The factor by which to subsample the pixels in each timelapse frame;
+        in other words, the factor by which to downscale the image in the x and y directions
     '''
 
     # aggregate the filepaths for all embryos from all FOVs in the dataset
