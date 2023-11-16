@@ -151,7 +151,10 @@ def main(
         tiled_embryo = _normalize_to_uint8(tiled_embryo)
 
         # create an image containing the embryo ID and FOV ID
-        # and prepend it to the tiled image as a crude label
+        # and prepend it to the tiled image as a crude way of labeling the embryos
+        # note: this is a *very* crude way to label the embryos in the tiled image;
+        # it is intended only as a kind of internal control and sanity check,
+        # and not for public consumption
         ids = parse_ids_from_embryo_filepath(embryo_filepath)
         id_image = _rasterize_text(
             text=f"fov{ids['fov_id']}\n{ids['embryo_id']}",
