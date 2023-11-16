@@ -1,3 +1,4 @@
+import json
 import os
 
 from pathlib import Path
@@ -9,9 +10,21 @@ import zarr
 
 from tqdm import tqdm
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
+
+
+def parse_ids_from_embryo_filepath(embryo_filepath):
+    '''
+    parse the dataset ID, FOV ID, and embryo ID from an embryo filepath of the form
+    /some/path/<dataset_id>/fov<fov_id>/embryo-<embryo_id>.zarr
+    '''
+    embryo_filepath = Path(embryo_filepath)
+    dataset_id = embryo_filepath.parent.parent.name
+    fov_id = embryo_filepath.parent.name.replace('fov', '')
+    embryo_id = embryo_filepath.stem.replace('embryo-', '')
+    return {'dataset_id': dataset_id, 'fov_id': fov_id, 'embryo_id': embryo_id}
 
 
 @cli_options.data_dirpath_option
@@ -95,30 +108,36 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
             logits = trained_model(input_tensor)
             predicted_label_inds = torch.argmax(logits, axis=1)
 
+        logits = logits.to("cpu").numpy()
         predicted_label_inds = predicted_label_inds.to("cpu").numpy()
+
         predicted_labels = [
             constants.EMBRYO_STAGE_INDEX_TO_LABEL[ind] for ind in predicted_label_inds
         ]
-        all_predicted_labels.append(
-            pd.Series(
-                predicted_labels, name=f"{embryo_filepath.parent.name}_{embryo_filepath.name}"
-            )
-        )
 
-    all_predicted_labels = pd.DataFrame(all_predicted_labels)
+        all_predicted_labels.append(
+            {
+                "logits": logits.tolist(),
+                "labels": predicted_labels,
+                "embryo_filepath": str(embryo_filepath),
+                **parse_ids_from_embryo_filepath(embryo_filepath),
+            }
+        )
 
     timestamp = pd.Timestamp.now().strftime("%Y-%m-%d")
 
     # write the predictions to a CSV file in the checkpoint's parent directory
     # (this is a hackish way to associate the predictions with the model that generated them)
-    csv_path = (
+    output_filepath = (
         checkpoint_filepath.parent.parent
-        / f'{timestamp}-predictions--from-{checkpoint_filepath.stem}--for-{dataset_id}.csv'
+        / f'{timestamp}-preds-for-{dataset_id}--from-{checkpoint_filepath.stem}.json'
     )
 
-    os.makedirs(csv_path.parent, exist_ok=True)
-    all_predicted_labels.to_csv(csv_path, index=False)
-    print(f"Predictions saved to {csv_path}")
+    os.makedirs(output_filepath.parent, exist_ok=True)
+    with open(output_filepath, 'w') as file:
+        json.dump(all_predicted_labels, file)
+
+    print(f"Predictions saved to {output_filepath}")
 
 
 if __name__ == '__main__':

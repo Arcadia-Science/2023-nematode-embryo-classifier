@@ -7,12 +7,11 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_model_summary import summary
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.metadata import get_annotations_filepath
+from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
 from embryostage.models.data import EmbryoDataModule, EmbryoDataset
-
-RANDOM_SEED = 2023
 
 
 @cli_options.data_dirpath_option
@@ -32,7 +31,7 @@ def main(data_dirpath, logs_dirpath, dataset_ids):
     train models for embryo classification using different combinations of channels
     '''
 
-    pl.seed_everything(RANDOM_SEED)
+    pl.seed_everything(constants.RANDOM_SEED)
 
     channel_combinations = {
         "SulstonNet_raw": ["raw"],
