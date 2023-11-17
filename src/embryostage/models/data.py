@@ -23,7 +23,7 @@ class EmbryoDataset(Dataset):
         # The length of this list indicates the number of channels
         # from which stage is predicted.
         # The names of channels describe what they represent
-        # (e.g., moving_mean, moving_std, fluorescent_reporter, raw, optical_flow)
+        # (e.g., moving_mean, moving_std, raw)
         self.channel_names = channel_names
 
         # The name of the group in the zarr store that contains the channels.
@@ -44,6 +44,7 @@ class EmbryoDataset(Dataset):
             self.labels_df = self.labels_df.loc[
                 self.labels_df["dataset_id"].astype(str).isin(dataset_ids)
             ]
+            self.labels_df.reset_index(inplace=True)
 
         # the map from index to label (without labels that do not exist in the annotations)
         extant_labels = self.labels_df["stage"].unique()
@@ -316,18 +317,8 @@ def expand_annotations(annotations: pd.DataFrame) -> pd.DataFrame:
     # Find columns with annotations of end times.
     t_end_cols = [col for col in annotations.columns if col.startswith("t_end")]
 
-    expanded_annotations = pd.DataFrame(
-        columns=[
-            "dataset_id",
-            "fov_id",
-            "embryo_id",
-            "frame",
-            "stage",
-            "zarr_path",
-        ]
-    )
-
     pbar = tqdm(total=len(annotations))
+    expanded_annotations_rows = []
     for idx, row in annotations.iterrows():
         zarr_path = f"{row.dataset_id}/fov{row.fov_id}/embryo-{row.new_embryo_id}.zarr"
 
@@ -345,23 +336,15 @@ def expand_annotations(annotations: pd.DataFrame) -> pd.DataFrame:
                 t_end = int(t_end)
                 # Write a row for each annotated frame of the movie.
                 for frame in range(t_start, t_end + 1):
-                    expanded_annotations = pd.concat(
-                        [
-                            expanded_annotations,
-                            pd.DataFrame(
-                                [
-                                    {
-                                        "dataset_id": row.dataset_id,
-                                        "fov_id": row.fov_id,
-                                        "embryo_id": row.new_embryo_id,
-                                        "frame": frame,
-                                        "stage": current_stage,
-                                        "zarr_path": zarr_path,
-                                    }
-                                ]
-                            ),
-                        ],
-                        ignore_index=True,
+                    expanded_annotations_rows.append(
+                        {
+                            "dataset_id": row.dataset_id,
+                            "fov_id": row.fov_id,
+                            "embryo_id": row.new_embryo_id,
+                            "frame": frame,
+                            "stage": current_stage,
+                            "zarr_path": zarr_path,
+                        }
                     )
 
-    return expanded_annotations
+    return pd.DataFrame(expanded_annotations_rows)

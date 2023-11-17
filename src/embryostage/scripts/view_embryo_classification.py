@@ -5,15 +5,20 @@ import numpy as np
 import torch
 import zarr
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.models import constants
 from embryostage.models.classification import SulstonNet
 
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
-@click.option('--fov-id', type=str, help='The ID of the FOV')
-@click.option('--embryo-id', type=str, help='The ID of the Embryo')
+@click.option('--fov-id', type=str)
+@click.option(
+    '--embryo-id',
+    type=str,
+    default='0',
+    help='either a linear index or a true embryo ID of the form {x_cen}-{y_cen}',
+)
 @click.option(
     '--channels-type',
     type=str,
@@ -66,13 +71,34 @@ def main(
     trained_model.eval()
     device = torch.device(device_name)
 
-    embryo_filepath = (
-        data_dirpath
-        / 'encoded_dynamics'
-        / dataset_id
-        / f'fov{fov_id}'
-        / f'embryo-{embryo_id}.zarr'
-    )
+    # if the embryo ID is a digit, assume it is a linear index
+    if embryo_id.isdigit():
+        embryo_filepaths = list(
+            (data_dirpath / 'encoded_dynamics' / dataset_id / f'fov{fov_id}').glob(
+                'embryo*.zarr'
+            )
+        )
+        if not embryo_filepaths:
+            raise FileNotFoundError(
+                f"No encoded dynamics data found for dataset '{dataset_id}' and FOV '{fov_id}'"
+            )
+
+        if int(embryo_id) >= len(embryo_filepaths):
+            raise ValueError(
+                f"Invalid embryo index '{embryo_id}'. "
+                f"There are only {len(embryo_filepaths)} embryos in FOV '{fov_id}'"
+            )
+        embryo_filepath = sorted(embryo_filepaths)[int(embryo_id)]
+
+    # assume the embryo ID is a 'true' embryo_id of the form '{x_cen}-{y_cen}'
+    else:
+        embryo_filepath = (
+            data_dirpath
+            / 'encoded_dynamics'
+            / dataset_id
+            / f'fov{fov_id}'
+            / f'embryo-{embryo_id}.zarr'
+        )
 
     channel_images = []
     for channel_name in channel_names:
@@ -109,7 +135,7 @@ def main(
     def text_overlay():
         frame_ind = viewer.dims.current_step[0]
         viewer.text_overlay.text = (
-            f"prediction:{constants.EMBRYO_STAGE_INDEX_TO_LABEL[predictions[frame_ind]]}"
+            f"Prediction: {constants.EMBRYO_STAGE_INDEX_TO_LABEL[predictions[frame_ind]]}"
         )
 
     # Connect the update function to the slider

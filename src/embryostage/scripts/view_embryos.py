@@ -2,7 +2,7 @@ import click
 import napari
 import zarr
 
-from embryostage.cli import options as cli_options
+from embryostage import cli_options
 from embryostage.preprocess.utils import get_cropped_embryo_filepaths
 
 
