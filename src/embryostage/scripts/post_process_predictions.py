@@ -161,7 +161,7 @@ def main(predictions_filepath, output_dirpath):
     num_cols = 2
 
     num_embryos = data.shape[0]
-    num_batches = int(np.floor(num_embryos / batch_size))
+    num_batches = int(np.ceil(num_embryos / batch_size))
 
     plots_dirpath = output_dirpath / 'plots' / f'plots_{filename}'
     os.makedirs(plots_dirpath, exist_ok=True)
@@ -170,8 +170,8 @@ def main(predictions_filepath, output_dirpath):
     data['denoised_labels'] = None
     data['embryo_end_state'] = None
 
-    for batch_ind in np.arange(num_batches + 1):
-        print(f'Plotting batch {batch_ind} of {num_batches}')
+    for batch_ind in np.arange(num_batches):
+        print(f'Plotting batch {batch_ind+1} of {num_batches}')
 
         embryos_inds_to_plot = np.arange(
             batch_ind * batch_size, min(num_embryos, batch_size * (batch_ind + 1))
@@ -207,7 +207,7 @@ def main(predictions_filepath, output_dirpath):
             ax.set_title(f'{" | ".join(ids_for_title)} (final: {final_state})')
 
         plt.tight_layout()
-        plt.savefig(os.path.join(plots_dirpath, f'embryo-batch-{batch_ind}.png'))
+        plt.savefig(os.path.join(plots_dirpath, f'embryo-batch-{batch_ind+1}.png'))
         plt.close()
 
     data.to_json(output_dirpath / f'{filename}-cleaned.json')
