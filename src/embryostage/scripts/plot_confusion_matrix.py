@@ -47,11 +47,11 @@ def _plot_confusion_matrix(true_labels, predicted_labels, labels):
         cbar=False,
     )
 
-    plt.xticks(rotation=45, ha='right', fontsize=14, fontstyle='italic')
-    plt.yticks(rotation=0, ha='right', fontsize=14, fontstyle='italic')
+    plt.xticks(rotation=45, ha='right', fontsize=14, fontstyle='normal')
+    plt.yticks(rotation=0, ha='right', fontsize=14, fontstyle='normal')
 
     plt.ylabel('True label', fontsize=16)
-    plt.xlabel('Predicted label', fontsize=16)
+    plt.xlabel('Inferred label', fontsize=16)
     plt.title('Confusion matrix', fontsize=16)
     plt.tight_layout()
 
@@ -67,8 +67,20 @@ def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     default=get_annotations_filepath(),
     help='The location of the annotations to use (defaults to the training annotations)',
 )
+@click.option(
+    '--filename-suffix',
+    type=str,
+    default='',
+    help='A suffix to add to the filename of the plot',
+)
+@click.option(
+    '--labels-column',
+    type=str,
+    default='labels',
+    help='The name of the column in the predictions file that contains the labels',
+)
 @click.command()
-def main(predictions_filepath, annotations_filepath):
+def main(predictions_filepath, annotations_filepath, filename_suffix, labels_column):
     '''
     Plot the confusion matrix for the predictions from a trained model
     given a set of manual annotations, and save the plot as a PDF in the directory
@@ -110,6 +122,7 @@ def main(predictions_filepath, annotations_filepath):
     preds = pd.DataFrame(data)
 
     # add a frame index to the labels
+    preds['labels'] = preds[labels_column]
     preds['labels'] = preds.labels.apply(lambda labels: list(enumerate(labels)))
 
     # explode on the labels and split the frame index and label name to separate columns
@@ -146,12 +159,13 @@ def main(predictions_filepath, annotations_filepath):
         predicted_labels=annotations_preds_merged.predicted_label.values,
         labels=constants.EMBRYO_STAGE_LABELS,
     )
+
+    filename_parts = [predictions_filepath.stem, 'confusion-matrix', annotations_filepath.stem]
+    if filename_suffix:
+        filename_parts.append(filename_suffix)
+
     plt.savefig(
-        predictions_filepath.parent
-        / (
-            f'{predictions_filepath.stem}--confusion-matrix'
-            '-using-{annotations_filepath.stem}.pdf'
-        ),
+        predictions_filepath.parent / f"{'--'.join(filename_parts)}.pdf",
         format='pdf',
     )
 
