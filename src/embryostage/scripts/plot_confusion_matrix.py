@@ -11,6 +11,9 @@ from embryostage.metadata import get_annotations_filepath
 from embryostage.models import constants
 from embryostage.models.data import EmbryoDataset
 
+# set the font to Arcadia's default font
+plt.rcParams['font.family'] = "Suisse Int'l"
+
 
 def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     '''
@@ -31,19 +34,26 @@ def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     confusion_matrix[np.isnan(confusion_matrix)] = 0
 
     plt.figure(figsize=(6, 6))
+    labels_for_plot = [label.capitalize() for label in labels]
     sns.heatmap(
         confusion_matrix,
         annot=True,
-        xticklabels=labels,
-        yticklabels=labels,
+        xticklabels=labels_for_plot,
+        yticklabels=labels_for_plot,
         cmap='Blues',
         fmt='.2f',
+        annot_kws={'size': 14},
         square=True,
         cbar=False,
     )
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.title('Confusion matrix')
+
+    plt.xticks(rotation=45, ha='right', fontsize=14, fontstyle='italic')
+    plt.yticks(rotation=0, ha='right', fontsize=14, fontstyle='italic')
+
+    plt.ylabel('True label', fontsize=16)
+    plt.xlabel('Predicted label', fontsize=16)
+    plt.title('Confusion matrix', fontsize=16)
+    plt.tight_layout()
 
 
 @click.option(
@@ -137,7 +147,11 @@ def main(predictions_filepath, annotations_filepath):
         labels=constants.EMBRYO_STAGE_LABELS,
     )
     plt.savefig(
-        predictions_filepath.parent / f'{predictions_filepath.stem}--confusion-matrix.pdf',
+        predictions_filepath.parent
+        / (
+            f'{predictions_filepath.stem}--confusion-matrix'
+            '-using-{annotations_filepath.stem}.pdf'
+        ),
         format='pdf',
     )
 
