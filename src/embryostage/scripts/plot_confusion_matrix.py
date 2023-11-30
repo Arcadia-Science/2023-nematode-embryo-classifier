@@ -12,7 +12,7 @@ from embryostage.models import constants
 from embryostage.models.data import EmbryoDataset
 
 # set the font to Arcadia's default font
-plt.rcParams['font.family'] = "Suisse Int'l"
+plt.rcParams['font.family'] = ["Suisse Int'l", 'sans-serif']
 
 
 def _plot_confusion_matrix(true_labels, predicted_labels, labels):
