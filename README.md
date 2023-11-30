@@ -5,7 +5,7 @@ This repo contains the code that accompanies the pub [Automated classification o
 ## Overview of the repo structure
 ### `/ground_truth`
 This directory contains CSV files of dataset metadata and the manual annotations for a subset of cropped embryos.
-(All of the cropped embryos can be found on Zenodo [here](https://zenodo.org/records/10211684); see [below](#about-the-data) for details.)
+(All of the cropped embryos can be found on Zenodo [here](https://zenodo.org/doi/10.5281/zenodo.10211683); see [below](#about-the-data) for details.)
 
 - __`/ground_truth/embryo_metadata.csv`__<br>
 This file contains biological metadata for each raw microscopy dataset.
