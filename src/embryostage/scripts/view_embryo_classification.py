@@ -12,26 +12,26 @@ from embryostage.models.classification import SulstonNet
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
-@click.option('--fov-id', type=str)
+@click.option("--fov-id", type=str)
 @click.option(
-    '--embryo-id',
+    "--embryo-id",
     type=str,
-    default='0',
-    help='either a linear index or a true embryo ID of the form {x_cen}-{y_cen}',
+    default="0",
+    help="either a linear index or a true embryo ID of the form {x_cen}-{y_cen}",
 )
 @click.option(
-    '--channels-type',
+    "--channels-type",
     type=str,
     help="The type of channel(s) used to train the model ('dynamic' or 'raw-only')",
 )
 @click.option(
-    '--checkpoint-filepath', type=str, help='The path to the model checkpoint (.ckpt) file'
+    "--checkpoint-filepath", type=str, help="The path to the model checkpoint (.ckpt) file"
 )
 @click.command()
 @click.option(
-    '--device-name',
+    "--device-name",
     type=str,
-    default='cpu',
+    default="cpu",
     help='The device on which to run inference ("cpu", "cuda", or "mps")',
 )
 def main(
@@ -43,10 +43,10 @@ def main(
     checkpoint_filepath,
     device_name,
 ):
-    '''
+    """
     interactively view the predicted classification
     for each frame of an embryo timelapse in napari
-    '''
+    """
 
     if channels_type == "dynamic":
         channel_names = ["moving_mean", "moving_std"]
@@ -74,8 +74,8 @@ def main(
     # if the embryo ID is a digit, assume it is a linear index
     if embryo_id.isdigit():
         embryo_filepaths = list(
-            (data_dirpath / 'encoded_dynamics' / dataset_id / f'fov{fov_id}').glob(
-                'embryo*.zarr'
+            (data_dirpath / "encoded_dynamics" / dataset_id / f"fov{fov_id}").glob(
+                "embryo*.zarr"
             )
         )
         if not embryo_filepaths:
@@ -94,10 +94,10 @@ def main(
     else:
         embryo_filepath = (
             data_dirpath
-            / 'encoded_dynamics'
+            / "encoded_dynamics"
             / dataset_id
-            / f'fov{fov_id}'
-            / f'embryo-{embryo_id}.zarr'
+            / f"fov{fov_id}"
+            / f"embryo-{embryo_id}.zarr"
         )
 
     channel_images = []
@@ -150,5 +150,5 @@ def main(
     napari.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

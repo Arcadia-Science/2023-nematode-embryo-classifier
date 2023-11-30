@@ -87,12 +87,12 @@ class EmbryoFinder:
 
     @staticmethod
     def bounding_box_to_id(bounding_box):
-        '''
+        """
         Crude way to generate an ID from bounding box coordinates that is unique within an FOV
-        '''
-        x_center = (bounding_box['xmin'] + bounding_box['xmax']) // 2
-        y_center = (bounding_box['ymin'] + bounding_box['ymax']) // 2
-        return f'{x_center:04d}-{y_center:04d}'
+        """
+        x_center = (bounding_box["xmin"] + bounding_box["xmax"]) // 2
+        y_center = (bounding_box["ymin"] + bounding_box["ymax"]) // 2
+        return f"{x_center:04d}-{y_center:04d}"
 
     def find_embryos(self):
         """
@@ -120,7 +120,7 @@ class EmbryoFinder:
                 mode="r",
                 channel_names="BF20x",
             ) as input_store:
-                time_series = np.asarray(input_store['raw'])
+                time_series = np.asarray(input_store["raw"])
                 time_series_std = np.std(time_series, axis=0).squeeze()
 
                 # Smoothing avoids detection of very small objects and
@@ -146,7 +146,7 @@ class EmbryoFinder:
             for _, embryo_bounding_box in enumerate(embryo_bounding_boxes):
                 # generate an FOV-unique ID for the embryo
                 embryo_id = self.bounding_box_to_id(embryo_bounding_box)
-                embryo_path = fov_output_path / f'embryo-{embryo_id}.zarr'
+                embryo_path = fov_output_path / f"embryo-{embryo_id}.zarr"
 
                 cropped_series = time_series[
                     :,

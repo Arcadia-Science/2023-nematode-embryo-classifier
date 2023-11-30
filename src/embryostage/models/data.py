@@ -145,9 +145,9 @@ class EmbryoDataModule(pl.LightningDataModule):
         self.balance_classes = balance_classes
 
     def setup(self, stage=None):
-        '''
+        """
         note: `stage` is a required kwarg for lightning data modules.
-        '''
+        """
         # Split the dataset into train, val, test sets.
         train_size = int(self.split[0] * len(self.dataset))
         val_size = int(self.split[1] * len(self.dataset))

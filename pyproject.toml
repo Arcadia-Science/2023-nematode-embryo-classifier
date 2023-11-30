@@ -77,7 +77,7 @@ src = ["embryostage"]
 line-length = 95
 target-version = ['py310']
 include = '\.pyi?$'
-skip-string-normalization = true
+skip-string-normalization = false
 exclude = '''
 (
   /(

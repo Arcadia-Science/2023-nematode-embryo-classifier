@@ -9,12 +9,12 @@ from embryostage.preprocess.embryo_finder import EmbryoFinder
 @cli_options.dataset_id_option
 @click.command()
 def main(data_dirpath, dataset_id):
-    '''
+    """
     This is a wrapper for calling EmbryoFinder.find_embryos()
-    '''
+    """
 
-    input_path = data_dirpath / 'raw_data' / dataset_id
-    output_path = data_dirpath / 'cropped_embryos' / dataset_id
+    input_path = data_dirpath / "raw_data" / dataset_id
+    output_path = data_dirpath / "cropped_embryos" / dataset_id
 
     if not input_path.exists():
         raise FileNotFoundError(
@@ -25,7 +25,7 @@ def main(data_dirpath, dataset_id):
     dataset_metadata = load_dataset_metadata(dataset_id=dataset_id)
 
     # the list of all FOV IDs in the dataset
-    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
+    fov_ids = [dirpath.name for dirpath in input_path.glob("fov*")]
 
     embryo_finder = EmbryoFinder(
         input_path=input_path,
@@ -39,5 +39,5 @@ def main(data_dirpath, dataset_id):
     embryo_finder.find_embryos()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

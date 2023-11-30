@@ -11,10 +11,10 @@ from embryostage.preprocess.utils import get_cropped_embryo_filepaths
 @click.option("--fov-ids", type=str, help="The IDs of the FOVs as a comma-separated list")
 @click.command()
 def main(data_dirpath, dataset_id, fov_ids):
-    '''
+    """
     Load the timelapses for all embryos from one or more FOVs from a given dataset
     into napari for viewing and annotating the embryos.
-    '''
+    """
     viewer = napari.Viewer()
 
     fov_ids = [fov_id.strip() for fov_id in fov_ids.split(",")]
@@ -33,5 +33,5 @@ def main(data_dirpath, dataset_id, fov_ids):
     napari.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
