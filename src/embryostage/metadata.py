@@ -18,7 +18,7 @@ def get_annotations_filepath():
     the CSV of manual annotations of embryo developmental stages
     '''
     filepath = (
-        file_utils.find_repo_root(__file__) / "ground_truth" / "embryo_developmental_stage.csv"
+        file_utils.find_repo_root(__file__) / "ground_truth" / "training_annotations.csv"
     )
     if not filepath.exists():
         raise FileNotFoundError(f"Manual annotations file not found at {filepath}")
