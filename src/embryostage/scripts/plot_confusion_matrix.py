@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 import click
 import matplotlib.pyplot as plt
