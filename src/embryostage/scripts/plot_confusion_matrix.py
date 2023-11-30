@@ -14,6 +14,10 @@ from embryostage.models.data import EmbryoDataset
 # set the font to Arcadia's default font
 plt.rcParams['font.family'] = ["Suisse Int'l", 'sans-serif']
 
+# blunt way to disable matplotlib's font-not-found warnings
+# (which are very noisy and occur if the user does not have Arcadia's font installed)
+logging.getLogger('matplotlib.font_manager').setLevel(logging.ERROR)
+
 
 def _plot_confusion_matrix(true_labels, predicted_labels, labels):
     '''
