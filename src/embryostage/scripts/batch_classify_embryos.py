@@ -16,40 +16,40 @@ from embryostage.models.classification import SulstonNet
 
 
 def parse_ids_from_embryo_filepath(embryo_filepath):
-    '''
+    """
     parse the dataset ID, FOV ID, and embryo ID from an embryo filepath of the form
     /some/path/<dataset_id>/fov<fov_id>/embryo-<embryo_id>.zarr
-    '''
+    """
     embryo_filepath = Path(embryo_filepath)
     dataset_id = embryo_filepath.parent.parent.name
-    fov_id = embryo_filepath.parent.name.replace('fov', '')
-    embryo_id = embryo_filepath.stem.replace('embryo-', '')
-    return {'dataset_id': dataset_id, 'fov_id': fov_id, 'embryo_id': embryo_id}
+    fov_id = embryo_filepath.parent.name.replace("fov", "")
+    embryo_id = embryo_filepath.stem.replace("embryo-", "")
+    return {"dataset_id": dataset_id, "fov_id": fov_id, "embryo_id": embryo_id}
 
 
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.option(
-    '--channels-type',
+    "--channels-type",
     type=str,
     help="The type of channel(s) used to train the model ('dynamic' or 'raw')",
 )
 @click.option(
-    '--checkpoint-filepath',
+    "--checkpoint-filepath",
     type=Path,
-    help='The path to the model checkpoint (.ckpt) file',
+    help="The path to the model checkpoint (.ckpt) file",
 )
 @click.option(
-    '--device-name',
+    "--device-name",
     type=str,
-    default='cpu',
+    default="cpu",
     help='The device on which to run inference ("cpu", "cuda", or "mps")',
 )
 @click.command()
 def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_name):
-    '''
+    """
     predict the classification for all embryos in a dataset
-    '''
+    """
 
     if channels_type == "dynamic":
         channel_names = ["moving_mean", "moving_std"]
@@ -79,7 +79,7 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
 
     # aggregate filepaths to the encoded dynamics for all embryos from all FOVs in the dataset
     embryo_filepaths = list(
-        (data_dirpath / 'encoded_dynamics' / dataset_id).glob('fov*/embryo*.zarr')
+        (data_dirpath / "encoded_dynamics" / dataset_id).glob("fov*/embryo*.zarr")
     )
 
     if not embryo_filepaths:
@@ -130,15 +130,15 @@ def main(data_dirpath, dataset_id, channels_type, checkpoint_filepath, device_na
     # (this is a hackish way to associate the predictions with the model that generated them)
     output_filepath = (
         checkpoint_filepath.parent.parent
-        / f'{timestamp}-preds-for-{dataset_id}--from-{checkpoint_filepath.stem}.json'
+        / f"{timestamp}-preds-for-{dataset_id}--from-{checkpoint_filepath.stem}.json"
     )
 
     os.makedirs(output_filepath.parent, exist_ok=True)
-    with open(output_filepath, 'w') as file:
+    with open(output_filepath, "w") as file:
         json.dump(all_predicted_labels, file)
 
     print(f"Predictions saved to {output_filepath}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

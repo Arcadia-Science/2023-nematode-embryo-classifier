@@ -47,14 +47,14 @@ def compute_morphodynamics(movie, features=None, t_window=5, normalize_features=
 
 
 def get_cropped_embryo_filepaths(data_dirpath: Path, dataset_id: str, fov_ids: list[int]):
-    '''
+    """
     get the paths to all embryo timelapses/movies for a given dataset and set of FOVs
-    '''
+    """
     all_embryo_zarr_paths = []
     for fov_id in fov_ids:
         embryo_zarr_paths = list(
-            (data_dirpath / 'cropped_embryos' / dataset_id / f'fov{fov_id}').glob(
-                'embryo*.zarr'
+            (data_dirpath / "cropped_embryos" / dataset_id / f"fov{fov_id}").glob(
+                "embryo*.zarr"
             )
         )
 

@@ -2,9 +2,9 @@ import pathlib
 
 
 def find_repo_root(current_dirpath):
-    '''
+    """
     find the absolute path of the nearest local git repo
-    '''
+    """
     current_dirpath = pathlib.Path(current_dirpath).absolute()
     while True:
         if (current_dirpath / ".git").exists():

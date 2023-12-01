@@ -9,10 +9,10 @@ from embryostage.scripts.batch_classify_embryos import parse_ids_from_embryo_fil
 
 
 def _tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
-    '''
+    """
     tile the frames from a cropped embryo timelapse horizontally to form a single 2D image
     of shape (size_x, size_t * size_y)
-    '''
+    """
 
     im = zarr.open(embryo_filepath)
 
@@ -39,12 +39,12 @@ def _tile_embryo(embryo_filepath, subsample_timepoints_by, subsample_xy_by):
 
 
 def _normalize_to_uint8(array, percentile=99):
-    '''
+    """
     normalize an array to 0-1 and convert to uint8
 
     array: the array to normalize
     percentile: the percentile to use for the max and min values
-    '''
+    """
     array = array.astype(np.float32)
 
     min_val, max_val = np.percentile(array.flatten(), (100 - percentile, percentile))
@@ -61,13 +61,13 @@ def _normalize_to_uint8(array, percentile=99):
 
 
 def _rasterize_text(text, font_size, image_size):
-    '''
+    """
     rasterize a string to an image and return the image as a numpy array
-    '''
+    """
     font = PIL.ImageFont.load_default(size=font_size)
 
     # Create a new blank image ('L' mode for grayscale)
-    image = PIL.Image.new('L', image_size, color=255)
+    image = PIL.Image.new("L", image_size, color=255)
 
     # draw the text onto the image, roughly centered vertically
     text_x = 10
@@ -82,28 +82,28 @@ def _rasterize_text(text, font_size, image_size):
 @cli_options.data_dirpath_option
 @cli_options.dataset_id_option
 @click.option(
-    '--subsample-embryos-by',
+    "--subsample-embryos-by",
     type=int,
     default=1,
-    help='The factor by which to subsample the embryos',
+    help="The factor by which to subsample the embryos",
 )
 @click.option(
-    '--subsample-timepoints-by',
+    "--subsample-timepoints-by",
     type=int,
     default=10,
-    help='The factor by which to subsample timepoints',
+    help="The factor by which to subsample timepoints",
 )
 @click.option(
-    '--subsample-xy-by',
+    "--subsample-xy-by",
     type=int,
     default=2,
-    help='The factor by which to subsample in x-y',
+    help="The factor by which to subsample in x-y",
 )
 @click.command()
 def main(
     data_dirpath, dataset_id, subsample_embryos_by, subsample_timepoints_by, subsample_xy_by
 ):
-    '''
+    """
     tile all cropped embryo timelapses from a given dataset
     by concatenating timelapse frames by column (i.e., horizontally)
     and concatenating the resulting images by row (i.e., vertically),
@@ -124,11 +124,11 @@ def main(
     subsample_xy_by: int
         The factor by which to subsample the pixels in each timelapse frame;
         in other words, the factor by which to downscale the image in the x and y directions
-    '''
+    """
 
     # aggregate the filepaths for all embryos from all FOVs in the dataset
     embryo_filepaths = list(
-        (data_dirpath / 'cropped_embryos' / dataset_id).glob('fov*/embryo*.zarr')
+        (data_dirpath / "cropped_embryos" / dataset_id).glob("fov*/embryo*.zarr")
     )
     if not embryo_filepaths:
         raise FileNotFoundError(
@@ -138,7 +138,7 @@ def main(
     # sort the embryo_filepaths by fov_id
     embryo_filepaths = sorted(
         embryo_filepaths,
-        key=lambda filepath: int(parse_ids_from_embryo_filepath(filepath)['fov_id']),
+        key=lambda filepath: int(parse_ids_from_embryo_filepath(filepath)["fov_id"]),
     )
 
     tiled_embryos = []
@@ -167,10 +167,10 @@ def main(
 
     tiled_array = np.concatenate(tuple(tiled_embryos), axis=0)
 
-    filepath = data_dirpath / f'{dataset_id}-cropped-embryos-tile.jpg'
+    filepath = data_dirpath / f"{dataset_id}-cropped-embryos-tile.jpg"
     imageio.imsave(filepath, tiled_array)
-    print(f'Tiled array saved to {filepath}')
+    print(f"Tiled array saved to {filepath}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

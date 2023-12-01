@@ -11,9 +11,9 @@ from embryostage.models import constants
 
 
 class SulstonNet(pl.LightningModule):
-    '''
+    """
     The SulstonNet model for embryo classification
-    '''
+    """
 
     def __init__(
         self,

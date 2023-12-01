@@ -13,12 +13,12 @@ from embryostage.preprocess.utils import compute_morphodynamics
 @cli_options.dataset_id_option
 @click.command()
 def main(data_dirpath, dataset_id):
-    '''
+    """
     Call compute_morphodynamics() on all cropped embryos in a dataset and save the results
-    '''
+    """
 
-    input_path = data_dirpath / 'cropped_embryos' / dataset_id
-    output_path = data_dirpath / 'encoded_dynamics' / dataset_id
+    input_path = data_dirpath / "cropped_embryos" / dataset_id
+    output_path = data_dirpath / "encoded_dynamics" / dataset_id
 
     if not input_path.exists():
         raise FileNotFoundError(
@@ -26,7 +26,7 @@ def main(data_dirpath, dataset_id):
         )
 
     # the list of all FOV IDs in the dataset
-    fov_ids = [dirpath.name for dirpath in input_path.glob('fov*')]
+    fov_ids = [dirpath.name for dirpath in input_path.glob("fov*")]
 
     for fov_id in fov_ids:
         cropped_embryo_filepaths = list((input_path / fov_id).glob("embryo-*"))
@@ -50,5 +50,5 @@ def main(data_dirpath, dataset_id):
             )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

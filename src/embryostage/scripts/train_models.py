@@ -16,20 +16,20 @@ from embryostage.models.data import EmbryoDataModule, EmbryoDataset
 
 @cli_options.data_dirpath_option
 @click.option(
-    '--dataset-ids',
+    "--dataset-ids",
     type=str,
-    help='The datasets to use for training, as a comma-separated list',
+    help="The datasets to use for training, as a comma-separated list",
 )
 @click.option(
-    '--logs-dirpath',
+    "--logs-dirpath",
     type=pathlib.Path,
-    help='The directory to which to write the training logs',
+    help="The directory to which to write the training logs",
 )
 @click.command()
 def main(data_dirpath, logs_dirpath, dataset_ids):
-    '''
+    """
     train models for embryo classification using different combinations of channels
-    '''
+    """
 
     pl.seed_everything(constants.RANDOM_SEED)
 
@@ -51,7 +51,7 @@ def main(data_dirpath, logs_dirpath, dataset_ids):
         print(f"Training model: {experiment_name}\n")
 
         embryo_dataset = EmbryoDataset(
-            data_dirpath=(data_dirpath / 'encoded_dynamics'),
+            data_dirpath=(data_dirpath / "encoded_dynamics"),
             channel_names=channel_names,
             annotations_csv=get_annotations_filepath(),
             dataset_ids=dataset_ids,
@@ -59,7 +59,7 @@ def main(data_dirpath, logs_dirpath, dataset_ids):
         )
 
         print(
-            'Training with data from the following datasets: %s'
+            "Training with data from the following datasets: %s"
             % embryo_dataset.labels_df.dataset_id.unique()
         )
 
