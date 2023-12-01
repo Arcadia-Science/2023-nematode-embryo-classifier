@@ -1,5 +1,5 @@
 # 2023-nematode-embryo-classifier
-This repo contains the code that accompanies the pub [Automated classification of time-course imaging data applied to nematode embryogenesis](https://research.arcadiascience.com/pub/resource-nematode-classifier).
+This repo contains the code that accompanies the pub [Automated classification of time-course imaging data applied to nematode embryogenesis](https://doi.org/10.57844/arcadia-c021-e384).
 
 
 ## Overview of the repo structure
@@ -19,7 +19,7 @@ This file contains manual annotations of developmental stage for the cropped emb
 
 ### `/microscopy`
 This directory contains the Nikon Elements script that was to automate the timelapse microscopy of developing embryos.
-Please refer to [our pub](https://research.arcadiascience.com/pub/resource-nematode-classifier) for more details.
+Please refer to [our pub](https://doi.org/10.57844/arcadia-c021-e384) for more details.
 
 ### `/notebooks`
 This directory contains a Jupyter notebook that was used to generate some of the figures for the pub.
@@ -31,8 +31,8 @@ It mostly consists of a series of CLI scripts; please refer to the [Analysis pip
 
 ## Installing the `embryostage` package
 This repository uses conda to manage software environments and installations.
-You can find operating system-specific instructions for installing miniconda [here](https://docs.conda.io/en/latest/miniconda.html).
-After installing conda and [mamba](https://mamba.readthedocs.io/en/latest/), setup a new conda environment.
+You can find operating system-specific instructions for installing miniconda [here](docs.conda.io/en/latest/miniconda.html).
+After installing conda and [mamba](mamba.readthedocs.io/en/latest/), setup a new conda environment.
 
 Create a new conda environment:
 ```sh
@@ -42,11 +42,11 @@ Create a new conda environment:
 
 Then install the current version of the `embroystage` package:
 ```sh
-    pip install git+https://github.com/Arcadia-Science/2023-embryostage.git
+    pip install git+https://github.com/Arcadia-Science/2023-nematode-embryo-classifier.git
 ```
 
 ## About the data
-The raw image data associated with the pub and with which the code in this repo was designed to work is available on Zenodo [here](https://zenodo.org/record/10211684).
+The raw image data associated with the pub and with which the code in this repo was designed to work is available on Zenodo [here](https://zenodo.org/doi/10.5281/zenodo.10211683).
 Note that this data includes the cropped embryos (generated in [step 2](#step-2-segment-embryos) of the analysis pipeline below) but not the original full raw images.
 To recapitulate the analysis workflow and train your own models, you can simply begin from [step 3](#step-3-annotate-developmental-stages) of the analysis pipeline below.
 
@@ -200,7 +200,7 @@ post-process-predictions \
 This script generates plots of the predictions and a new version of the JSON file of predictions; both are written to the `output_dirpath` directory.
 
 ## Analysis and figure generation
-There are several additional scripts that we used to generate the figures shown in [the pub](https://research.arcadiascience.com/pub/resource-nematode-classifier).
+There are several additional scripts that we used to generate the figures shown in [the pub](https://doi.org/10.57844/arcadia-c021-e384).
 
 ### Confusion matrices
 To generate a publication-quality plot of the confusion matrices, use the `plot-confusion-matrix` command. It points to [this script](../src/embryostage/scripts/plot_confusion_matrix.py).
