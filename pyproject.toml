@@ -14,28 +14,26 @@ authors = [
   { name = "Keith Cheveralls", email = "keith.cheveralls@arcadiascience.com" },
 ]
 
-# TODO: pin versions of all dependencies here
 dependencies = [
   "iohub==0.1.0.dev4",
-  "nd2",
-  "torch>=2.0.0",
-  "tensorboard>=2.13.0",
-  "lightning>=2.0.1",
-  "pytorch_model_summary",
-  "numpy",
-  "qtpy",
-  "pandas",
-  "natsort",
-  "napari[all]",
-  "napari-ome-zarr",
-  "matplotlib",
-  "scikit-image",
-  "scikit-learn",
-  "torchvision",
-  "torchmetrics",
-  "monai",
-  "tensorboard",
-  "tqdm",
+  "lightning==2.1.0",
+  "matplotlib==3.8.1",
+  "monai==1.3.0",
+  "natsort==8.4.0",
+  "napari==0.4.18",
+  "napari-ome-zarr==0.5.2",
+  "nd2==0.8.0",
+  "numpy==1.26.0",
+  "pandas==2.1.2",
+  "pytorch_model_summary==0.1.2",
+  "qtpy==2.4.1",
+  "scikit-image==0.22.0",
+  "scikit-learn==1.3.2",
+  "tensorboard==2.15.0",
+  "torch==2.1.0",
+  "torchvision==0.16.0",
+  "torchmetrics==1.2.0",
+  "tqdm==4.66.1",
 ]
 dynamic = ["version"]
 
@@ -48,11 +46,6 @@ dev = [
   "pre-commit~=2.19",
   "pylint~=2.14",
   "pytest~=7.1",
-  # TODO: remove these if unused after writing tests
-  "pytest-cov",
-  "hypothesis",
-  "profilehooks",
-  "onnxruntime",
 ]
 
 [project.scripts]
