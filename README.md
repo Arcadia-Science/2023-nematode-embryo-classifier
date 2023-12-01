@@ -31,8 +31,8 @@ It mostly consists of a series of CLI scripts; please refer to the [Analysis pip
 
 ## Installing the `embryostage` package
 This repository uses conda to manage software environments and installations.
-You can find operating system-specific instructions for installing miniconda [here](docs.conda.io/en/latest/miniconda.html).
-After installing conda and [mamba](mamba.readthedocs.io/en/latest/), setup a new conda environment.
+You can find operating system-specific instructions for installing miniconda [here](https://docs.conda.io/en/latest/miniconda.html).
+After installing conda and [mamba](https://mamba.readthedocs.io/en/latest/), setup a new conda environment.
 
 Create a new conda environment:
 ```sh
