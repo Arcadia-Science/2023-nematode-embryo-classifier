@@ -15,11 +15,10 @@ MEDFILT_KERNEL = 7
 STATE_TO_INDEX = {
     "unfertilized": -1,
     "proliferation": 0,
-    "bean": 1,
-    "comma": 2,
-    "fold": 3,
-    "hatch": 4,
-    "death": 5,
+    "morphogenesis": 1,
+    "fold": 2,
+    "hatch": 3,
+    "death": 4,
 }
 
 INDEX_TO_STATE = {v: k for k, v in STATE_TO_INDEX.items()}

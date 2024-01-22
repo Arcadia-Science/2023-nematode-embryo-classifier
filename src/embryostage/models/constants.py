@@ -6,8 +6,9 @@ FEATURES_GROUP_NAME = "dynamic_features"
 # the allowed labels for the manual annotations
 EMBRYO_STAGE_LABELS = [
     "proliferation",
-    "bean",
-    "comma",
+    "morphogenesis",
+    #"bean",
+    #"comma",
     "fold",
     "hatch",
     "death",
