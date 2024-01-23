@@ -8,18 +8,14 @@ import scipy.stats
 
 from scipy.signal import medfilt
 
+from embryostage.models import constants
+
 # kernel size for the median filter used to smooth the embryo states
 MEDFILT_KERNEL = 7
 
-# assign a numerical index to each embryo state, ordered by developmental progression
-STATE_TO_INDEX = {
-    "unfertilized": -1,
-    "proliferation": 0,
-    "morphogenesis": 1,
-    "fold": 2,
-    "hatch": 3,
-    "death": 4,
-}
+# assign a numerical index to each embryo state
+# note: assumes EMBRYO_STAGE_LABELS is ordered by developmental progression
+STATE_TO_INDEX = {label: ind - 1 for ind, label in enumerate(constants.EMBRYO_STAGE_LABELS)}
 
 INDEX_TO_STATE = {v: k for k, v in STATE_TO_INDEX.items()}
 

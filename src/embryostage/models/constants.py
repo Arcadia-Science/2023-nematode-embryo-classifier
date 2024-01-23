@@ -3,16 +3,16 @@ EMBRYO_CROP_SIZE = 224
 
 FEATURES_GROUP_NAME = "dynamic_features"
 
-# the allowed labels for the manual annotations
+# the list of allowed labels for the manual annotations, ordered by developmental progression,
+# with 'unfertilized' first and 'death' last
+# (the order matters only because of how this list is used in post_process_predictions.py)
 EMBRYO_STAGE_LABELS = [
+    "unfertilized",
     "proliferation",
     "morphogenesis",
-    #"bean",
-    #"comma",
     "fold",
     "hatch",
     "death",
-    "unfertilized",
 ]
 
 # map between the labels used in the manual annotations and an arbitrary linear index
