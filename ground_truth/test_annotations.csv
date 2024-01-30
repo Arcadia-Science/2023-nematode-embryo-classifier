@@ -37,3 +37,4 @@ dataset_id,fov_id,old_embryo_id,new_embryo_id,stage_1,t_start_1,t_end_1,stage_2,
 231211,32,,2142-0425,proliferation,2,79,death,80,189,,,,,,,,,,
 230817,215,,2040-1901,death,2,176,,,,,,,,,,,,,
 230719,29,,0761-0083,proliferation,2,33,morphogenesis,34,63,fold,64,83,death,84,165,,,,
+

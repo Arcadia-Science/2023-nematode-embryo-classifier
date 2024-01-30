@@ -8,3 +8,5 @@ dataset_id,species,strain,perturbation,xy_sampling_um,t_sampling_sec,embryo_leng
 231031,celegans,DQM327,control_0.5M_0.75MNaCl,0.33,300,65,35
 231211,celegans,EU1062_EU2010,15C-25C_25C-25C,0.22,300,65,32.5
 240117,otipulae,CEW1,control,0.33,300,55,30
+240125,cportoensis,EG4788,control,0.33,300,80,40
+240126,celegans,EU1062_EU2010,25C,0.33,300,80,40
